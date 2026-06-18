@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --color-primary-50: #e6f3eb;
+  --color-primary-100: #cce7d7;
+  --color-primary-500: #00873E;
+  --color-primary-600: #007a38;
+  --color-primary-700: #00612c;
+  --color-sidebar: #0f172a;
+  
+  --animate-liquid: liquid 12s infinite alternate ease-in-out;
+  --animate-liquid-slow: liquid 18s infinite alternate-reverse ease-in-out;
+}
+
+@keyframes liquid {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, 40px) scale(1.1); }
+  100% { transform: translate(-20px, -30px) scale(0.9); }
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased font-sans;
+}

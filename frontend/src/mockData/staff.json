@@ -1,0 +1,34 @@
+[
+  {
+    "id": "s1",
+    "name": "Jane Smith",
+    "role": "Technician",
+    "phone": "+1122334455",
+    "currentLocation": { "lat": 12.9716, "lng": 77.5946 },
+    "assignedTasks": ["t1", "t2"],
+    "incentiveEarned": 2500,
+    "salesTarget": 10000,
+    "salaryDetails": {
+      "base": 30000,
+      "pf": 1800,
+      "esi": 250,
+      "leavesTaken": 2
+    }
+  },
+  {
+    "id": "s2",
+    "name": "Mike Johnson",
+    "role": "Senior Technician",
+    "phone": "+5544332211",
+    "currentLocation": { "lat": 12.9352, "lng": 77.6245 },
+    "assignedTasks": ["t3"],
+    "incentiveEarned": 4200,
+    "salesTarget": 15000,
+    "salaryDetails": {
+      "base": 45000,
+      "pf": 2200,
+      "esi": 350,
+      "leavesTaken": 0
+    }
+  }
+]
