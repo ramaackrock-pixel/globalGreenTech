@@ -12,9 +12,11 @@ import {
   Menu,
   ShieldCheck
 } from 'lucide-react';
+import { useSearch } from '../../context/SearchContextProvider';
 
 const AdminLayout: React.FC = () => {
   const location = useLocation();
+  const { searchQuery, setSearchQuery } = useSearch();
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -26,29 +28,25 @@ const AdminLayout: React.FC = () => {
   ];
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] text-slate-800 font-sans text-sm selection:bg-primary-500/30 selection:text-primary-900">
-      {/* Sidebar - iOS 26 Liquid Glass Theme */}
-      <aside className="w-64 hidden md:flex flex-col relative overflow-hidden shadow-[8px_0_40px_rgba(0,135,62,0.08)] z-20 border-r border-white/40">
-        {/* Liquid Orbs Layer (Behind the glass) */}
+    <div className="flex h-screen bg-background text-on-surface font-sans text-sm selection:bg-primary/30 selection:text-on-primary">
+      <aside className="w-64 hidden md:flex flex-col relative overflow-hidden shadow-[8px_0_40px_rgba(0,94,154,0.08)] z-20 border-r border-outline-variant/40 bg-surface-container-lowest">
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-10 -left-10 w-64 h-64 bg-[#00873E]/30 rounded-full mix-blend-multiply blur-[50px] animate-liquid"></div>
-          <div className="absolute top-40 -right-20 w-72 h-72 bg-emerald-400/30 rounded-full mix-blend-multiply blur-[60px] animate-liquid-slow"></div>
-          <div className="absolute -bottom-20 -left-10 w-80 h-80 bg-teal-500/20 rounded-full mix-blend-multiply blur-[60px] animate-liquid"></div>
+          <div className="absolute -top-10 -left-10 w-64 h-64 bg-primary/20 rounded-full mix-blend-multiply blur-[50px] animate-liquid"></div>
+          <div className="absolute top-40 -right-20 w-72 h-72 bg-secondary/20 rounded-full mix-blend-multiply blur-[60px] animate-liquid-slow"></div>
+          <div className="absolute -bottom-20 -left-10 w-80 h-80 bg-tertiary/20 rounded-full mix-blend-multiply blur-[60px] animate-liquid"></div>
         </div>
 
-        {/* The actual Frosted Glass layer */}
-        <div className="absolute inset-0 bg-white/20 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),inset_1px_0_0_rgba(255,255,255,0.4)] z-0"></div>
+        <div className="absolute inset-0 bg-surface-container-lowest/40 backdrop-blur-3xl z-0"></div>
 
-        {/* Content */}
-        <div className="h-16 flex items-center px-6 border-b border-white/30 relative z-10">
+        <div className="h-16 flex items-center px-6 border-b border-surface-container-highest relative z-10">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Global Green Tech" className="w-9 h-9 object-contain drop-shadow-sm" />
-            <span className="text-slate-800 font-extrabold tracking-wide drop-shadow-[0_1px_1px_rgba(255,255,255,1)]">Green Tech</span>
+            <span className="text-on-surface font-extrabold tracking-wide drop-shadow-[0_1px_1px_rgba(255,255,255,1)]">Green Tech</span>
           </div>
         </div>
 
         <nav className="flex-1 py-6 overflow-y-auto relative z-10">
-          <div className="px-6 mb-3 text-[10px] font-extrabold text-slate-500/80 uppercase tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,1)]">Main Menu</div>
+          <div className="px-6 mb-3 text-label-md text-on-surface-variant uppercase tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,1)]">Main Menu</div>
           <ul className="space-y-1.5 px-3">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
@@ -58,11 +56,11 @@ const AdminLayout: React.FC = () => {
                   <Link
                     to={item.href}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-300 ${isActive
-                        ? 'bg-white/50 text-[#00873E] font-extrabold border border-white/60 shadow-[0_4px_12px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-md'
-                        : 'hover:bg-white/30 hover:text-slate-900 border border-transparent font-medium text-slate-700'
+                      ? 'bg-primary-container/10 text-primary font-extrabold border border-primary/20 shadow-sm'
+                      : 'hover:bg-surface-container hover:text-on-surface border border-transparent font-medium text-on-surface-variant'
                       }`}
                   >
-                    <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-[#00873E] drop-shadow-[0_2px_4px_rgba(0,135,62,0.3)]' : 'text-slate-500 group-hover:text-slate-700'}`} />
+                    <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-primary' : 'text-outline group-hover:text-on-surface'}`} />
                     {item.name}
                   </Link>
                 </li>
@@ -71,10 +69,10 @@ const AdminLayout: React.FC = () => {
           </ul>
         </nav>
 
-        <div className="p-4 border-t border-white/30 relative z-10">
+        <div className="p-4 border-t border-surface-container-highest relative z-10">
           <Link
             to="/login"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-slate-600 hover:text-slate-900 hover:bg-white/40 transition-all duration-300 border border-transparent hover:border-white/50 hover:shadow-sm font-medium"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all duration-300 border border-transparent font-medium"
           >
             <LogOut className="w-4 h-4" />
             Sign Out
@@ -85,41 +83,43 @@ const AdminLayout: React.FC = () => {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {/* Top Header */}
-        <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 flex items-center justify-between px-6 z-10 shrink-0 shadow-sm sticky top-0">
+        <header className="h-16 bg-surface-container-lowest/80 backdrop-blur-xl border-b border-surface-container-highest flex items-center justify-between px-6 z-10 shrink-0 shadow-sm sticky top-0">
           <div className="flex items-center gap-4 flex-1">
-            <button className="md:hidden text-slate-500 hover:text-slate-700">
+            <button className="md:hidden text-outline hover:text-on-surface">
               <Menu className="w-5 h-5" />
             </button>
             <div className="hidden md:flex relative max-w-md w-full group">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" />
               <input
                 type="text"
-                placeholder="Search customers, tasks, or serial numbers..."
-                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 shadow-sm rounded-xl text-sm focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search customers, tasks, or inventory..."
+                className="input-field pl-10 py-2 rounded-xl"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-6">
-            <button className="relative text-slate-400 hover:text-primary-600 transition-colors p-2 rounded-full hover:bg-primary-50">
+            <button className="relative text-outline hover:text-primary transition-colors p-2 rounded-full hover:bg-primary-fixed">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white shadow-sm"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border-2 border-surface-container-lowest shadow-sm"></span>
             </button>
-            <div className="h-8 w-px bg-slate-200/80"></div>
-            <div className="flex items-center gap-3 cursor-pointer group p-1.5 pr-3 rounded-full hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center font-bold text-xs shadow-md group-hover:shadow-primary-500/20">
+            <div className="h-8 w-px bg-surface-container-highest"></div>
+            <div className="flex items-center gap-3 cursor-pointer group p-1.5 pr-3 rounded-full hover:bg-surface-container border border-transparent transition-all">
+              <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-xs shadow-md">
                 AU
               </div>
               <div className="text-left hidden sm:block">
-                <p className="text-sm font-semibold text-slate-700 leading-none group-hover:text-primary-600 transition-colors">Admin User</p>
-                <p className="text-[10px] text-slate-500 mt-1 uppercase font-semibold tracking-wider">Admin</p>
+                <p className="text-body-sm font-semibold text-on-surface leading-none group-hover:text-primary transition-colors">Admin User</p>
+                <p className="text-label-md text-on-surface-variant mt-1">Admin</p>
               </div>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#00873E]/[0.03]">
+        <div className="flex-1 overflow-y-auto p-6 lg:p-8 bg-background">
           <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Outlet />
           </div>
