@@ -15,6 +15,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ isOpen, onClose, onSave }
     address: '',
     amcStatus: 'Active',
     nextAmcDate: '',
+    leadSource: '',
+    amcVisitsPerYear: 3,
   });
 
   if (!isOpen) return null;
@@ -121,6 +123,39 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ isOpen, onClose, onSave }
                   name="nextAmcDate"
                   required
                   value={formData.nextAmcDate}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">Lead Source</label>
+                <select
+                  name="leadSource"
+                  value={formData.leadSource}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all cursor-pointer"
+                >
+                  <option value="">Select Source...</option>
+                  <option value="WhatsApp">WhatsApp</option>
+                  <option value="Website">Website</option>
+                  <option value="BNI">BNI</option>
+                  <option value="Google">Google</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="JustDial">Just Dial</option>
+                  <option value="Referral">Existing Customer Referral</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">Total AMC Visits / Year</label>
+                <input
+                  type="number"
+                  name="amcVisitsPerYear"
+                  min="1"
+                  required
+                  value={formData.amcVisitsPerYear}
                   onChange={handleChange}
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                 />

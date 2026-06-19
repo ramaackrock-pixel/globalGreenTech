@@ -10,7 +10,8 @@ import {
   Bell,
   Search,
   Menu,
-  ShieldCheck
+  ShieldCheck,
+  Banknote
 } from 'lucide-react';
 import { useSearch } from '../../context/SearchContextProvider';
 
@@ -24,6 +25,7 @@ const AdminLayout: React.FC = () => {
     { name: 'Customers & AMC', href: '/admin/customers', icon: Users },
     { name: 'Service Tasks', href: '/admin/amc', icon: CalendarClock },
     { name: 'Inventory', href: '/admin/inventory', icon: Package },
+    { name: 'Payroll & Salary', href: '/admin/payroll', icon: Banknote },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 

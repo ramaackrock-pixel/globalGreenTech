@@ -1,0 +1,26 @@
+[
+  {
+    "id": "p1",
+    "staffId": "s1",
+    "month": "June 2026",
+    "baseSalary": 25000,
+    "pf": 1800,
+    "esi": 250,
+    "allowances": 2000,
+    "netSalary": 24950,
+    "status": "Paid",
+    "paymentDate": "2026-06-01"
+  },
+  {
+    "id": "p2",
+    "staffId": "s2",
+    "month": "June 2026",
+    "baseSalary": 22000,
+    "pf": 1500,
+    "esi": 200,
+    "allowances": 1500,
+    "netSalary": 21800,
+    "status": "Pending",
+    "paymentDate": ""
+  }
+]

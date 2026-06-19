@@ -110,6 +110,9 @@ const AdminCustomers: React.FC = () => {
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded uppercase tracking-wider">{customer.id}</span>
                         <span className="text-[10px] font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded uppercase tracking-wider">{customer.category}</span>
+                        {customer.leadSource && (
+                          <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded uppercase tracking-wider">Lead: {customer.leadSource}</span>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -133,6 +136,11 @@ const AdminCustomers: React.FC = () => {
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">
                         Renewal: {new Date(customer.nextAmcDate).toLocaleDateString('en-GB')}
                       </span>
+                      {customer.amcVisitsPerYear && (
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 w-fit px-2 py-0.5 rounded uppercase tracking-wider mt-1">
+                          Visits: {customer.amcVisitsPerYear}/Year
+                        </span>
+                      )}
                     </div>
                   </td>
 

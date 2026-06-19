@@ -53,10 +53,8 @@
   --color-sidebar: #0f172a;
 
   /* Fonts */
-  --font-manrope: 'Manrope', system-ui, sans-serif;
-  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-sans: 'Nunito', system-ui, sans-serif;
   --font-jetbrains: 'JetBrains Mono', monospace;
-  --font-sans: var(--font-inter);
 
   /* Border Radius */
   --radius-sm: 0.25rem;
@@ -78,10 +76,70 @@
   --animate-liquid-slow: liquid 18s infinite alternate-reverse ease-in-out;
 }
 
+@theme {
+  @variant dark (&:where(.dark, .dark *));
+}
+
+@layer base {
+  :root.dark {
+    /* Dark Mode Colors - Deep Slate and Navy */
+    --color-surface: #111827;
+    --color-surface-dim: #0f172a;
+    --color-surface-bright: #1f2937;
+    --color-surface-container-lowest: #030712;
+    --color-surface-container-low: #111827;
+    --color-surface-container: #1f2937;
+    --color-surface-container-high: #374151;
+    --color-surface-container-highest: #4b5563;
+
+    --color-on-surface: #f9fafb;
+    --color-on-surface-variant: #d1d5db;
+    --color-inverse-surface: #f3f4f6;
+    --color-inverse-on-surface: #111827;
+
+    --color-outline: #6b7280;
+    --color-outline-variant: #4b5563;
+
+    --color-primary: #3b82f6;
+    --color-on-primary: #ffffff;
+    --color-primary-container: #1e3a8a;
+    --color-on-primary-container: #dbeafe;
+
+    --color-secondary: #06b6d4;
+    --color-on-secondary: #ffffff;
+    --color-secondary-container: #164e63;
+    --color-on-secondary-container: #cffafe;
+
+    --color-tertiary: #8b5cf6;
+    --color-on-tertiary: #ffffff;
+    --color-tertiary-container: #4c1d95;
+    --color-on-tertiary-container: #ede9fe;
+
+    --color-error: #ef4444;
+    --color-on-error: #ffffff;
+    --color-error-container: #7f1d1d;
+    --color-on-error-container: #fee2e2;
+
+    --color-background: #0f172a;
+    --color-on-background: #f8fafc;
+
+    --color-sidebar: #020617;
+  }
+}
+
+
 @keyframes liquid {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(30px, 40px) scale(1.1); }
-  100% { transform: translate(-20px, -30px) scale(0.9); }
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(30px, 40px) scale(1.1);
+  }
+
+  100% {
+    transform: translate(-20px, -30px) scale(0.9);
+  }
 }
 
 body {
@@ -90,48 +148,55 @@ body {
 
 /* Typography Utilities */
 @utility text-display-lg {
-  font-family: var(--font-manrope);
+  font-family: var(--font-sans);
   font-size: 48px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 56px;
   letter-spacing: -0.02em;
 }
+
 @utility text-headline-lg {
-  font-family: var(--font-manrope);
+  font-family: var(--font-sans);
   font-size: 32px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 40px;
 }
+
 @utility text-headline-md {
-  font-family: var(--font-manrope);
+  font-family: var(--font-sans);
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 32px;
 }
+
 @utility text-headline-sm {
-  font-family: var(--font-manrope);
+  font-family: var(--font-sans);
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 28px;
 }
+
 @utility text-body-lg {
-  font-family: var(--font-inter);
+  font-family: var(--font-sans);
   font-size: 18px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 28px;
 }
+
 @utility text-body-md {
-  font-family: var(--font-inter);
+  font-family: var(--font-sans);
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 24px;
 }
+
 @utility text-body-sm {
-  font-family: var(--font-inter);
+  font-family: var(--font-sans);
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 20px;
 }
+
 @utility text-label-md {
   font-family: var(--font-jetbrains);
   font-size: 13px;
@@ -139,49 +204,57 @@ body {
   line-height: 16px;
   letter-spacing: 0.05em;
 }
+
 @utility text-headline-lg-mobile {
-  font-family: var(--font-manrope);
+  font-family: var(--font-sans);
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 36px;
 }
 
 /* Component Classes */
 @layer components {
+
   /* Buttons */
   .btn-primary {
-    @apply bg-primary-container text-white px-gutter py-unit rounded font-semibold hover:bg-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary-container focus:ring-offset-2 flex items-center justify-center gap-2;
+    @apply bg-primary text-white px-5 py-2.5 rounded-xl font-bold hover:bg-primary-container transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center justify-center gap-2;
   }
+
   .btn-secondary {
-    @apply bg-transparent text-primary-container border border-primary-container px-gutter py-unit rounded font-semibold hover:bg-primary-container hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-container focus:ring-offset-2 flex items-center justify-center gap-2;
+    @apply bg-transparent text-primary border border-outline-variant/50 px-5 py-2.5 rounded-xl font-bold hover:bg-surface-container-lowest transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center justify-center gap-2;
   }
+
   .btn-ghost {
-    @apply bg-transparent text-primary-container px-gutter py-unit rounded font-semibold hover:bg-surface-container hover:text-primary transition-colors focus:outline-none flex items-center justify-center gap-2;
+    @apply bg-transparent text-on-surface-variant px-5 py-2.5 rounded-xl font-bold hover:bg-surface-container transition-colors focus:outline-none flex items-center justify-center gap-2;
   }
 
   /* Input Fields */
   .input-field {
-    @apply bg-white border border-outline-variant rounded px-gutter py-unit w-full text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all placeholder:text-outline;
+    @apply bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-4 py-2.5 w-full text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline/60 font-medium shadow-sm;
   }
+
   .select-field {
-    @apply bg-transparent text-body-sm font-semibold text-on-surface outline-none appearance-none cursor-pointer w-full pl-unit pr-gutter py-unit;
+    @apply bg-transparent text-body-sm font-bold text-on-surface outline-none appearance-none cursor-pointer w-full pl-4 pr-10 py-2.5;
   }
+
   .select-wrapper {
-    @apply flex items-center gap-2 bg-white px-3 py-1.5 rounded border border-outline-variant shadow-sm focus-within:ring-2 focus-within:ring-primary-container/20 focus-within:border-primary-container transition-all;
+    @apply flex items-center gap-2 bg-surface-container-lowest px-2 py-1 rounded-xl border border-outline-variant/40 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all;
   }
 
   /* Cards */
   .card {
-    @apply bg-surface-container-lowest border border-surface-container-highest rounded-lg shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.05)] overflow-hidden;
+    @apply bg-white border border-outline-variant/30 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden relative transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-primary/20;
   }
 
   /* Badges */
   .badge-active {
     @apply bg-tertiary-container text-on-tertiary-container px-2.5 py-1 rounded-full text-label-md inline-flex items-center gap-1.5 border border-tertiary;
   }
+
   .badge-expired {
     @apply bg-error-container text-on-error-container px-2.5 py-1 rounded-full text-label-md inline-flex items-center gap-1.5 border border-error;
   }
+
   .badge-due {
     @apply bg-[#FFF8E1] text-[#FF8F00] px-2.5 py-1 rounded-full text-label-md inline-flex items-center gap-1.5 border border-[#FF8F00];
   }

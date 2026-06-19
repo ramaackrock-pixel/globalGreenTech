@@ -8,6 +8,7 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminCustomers from './pages/admin/AdminCustomers';
 import AdminTasks from './pages/admin/AdminTasks';
 import AdminInventory from './pages/admin/AdminInventory';
+import AdminPayroll from './pages/admin/AdminPayroll';
 import StaffLayout from './components/layout/StaffLayout';
 import StaffDashboard from './pages/staff/StaffDashboard';
 import CustomerLayout from './components/layout/CustomerLayout';
@@ -31,6 +32,7 @@ function App() {
             <Route path="customers" element={<AdminCustomers />} />
             <Route path="amc" element={<AdminTasks />} />
             <Route path="inventory" element={<AdminInventory />} />
+            <Route path="payroll" element={<AdminPayroll />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 

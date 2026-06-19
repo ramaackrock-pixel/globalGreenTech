@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Filter, MoreVertical, PenTool, CheckCircle2, Clock, CalendarDays, Plus, CalendarClock } from 'lucide-react';
+import { Filter, MoreVertical, PenTool, CheckCircle2, Clock, CalendarDays, Plus, CalendarClock, MessageCircle, FileCheck } from 'lucide-react';
 import tasksData from '../../mockData/tasks.json';
 import customersData from '../../mockData/customers.json';
 import { useSearch } from '../../context/SearchContextProvider';
@@ -204,9 +204,21 @@ const AdminTasks: React.FC = () => {
                   </td>
 
                   <td className="px-6 py-4 text-right">
-                    <button className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      {task.type === 'AMC' && task.status === 'Open' && (
+                        <button className="p-2 text-primary hover:text-primary-container hover:bg-primary-fixed rounded-lg transition-colors" title="Auto Schedule via WhatsApp">
+                          <MessageCircle className="w-5 h-5" />
+                        </button>
+                      )}
+                      {task.status === 'Completed' && (
+                        <button className="p-2 text-secondary hover:text-secondary-container hover:bg-secondary-fixed rounded-lg transition-colors" title="Generate Commissioning Report">
+                          <FileCheck className="w-5 h-5" />
+                        </button>
+                      )}
+                      <button className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
+                        <MoreVertical className="w-5 h-5" />
+                      </button>
+                    </div>
                   </td>
 
                 </tr>
