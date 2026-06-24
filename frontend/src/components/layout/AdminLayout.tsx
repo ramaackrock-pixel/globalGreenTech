@@ -10,8 +10,12 @@ import {
   Bell,
   Search,
   Menu,
+  Navigation,
+  Images,
   ShieldCheck,
-  Banknote
+  Banknote,
+  ShoppingCart,
+  Briefcase
 } from 'lucide-react';
 import { useSearch } from '../../context/SearchContextProvider';
 
@@ -21,10 +25,14 @@ const AdminLayout: React.FC = () => {
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Live Tracking', href: '/admin/tracking', icon: Navigation },
+    { name: 'Staff Attendance', href: '/admin/attendance', icon: CalendarClock },
+    { name: 'Job Gallery', href: '/admin/photos', icon: Images },
     { name: 'User Accounts', href: '/admin/users', icon: ShieldCheck },
     { name: 'Customers & AMC', href: '/admin/customers', icon: Users },
-    { name: 'Service Tasks', href: '/admin/amc', icon: CalendarClock },
+    { name: 'Service Tasks', href: '/admin/amc', icon: Briefcase },
     { name: 'Inventory', href: '/admin/inventory', icon: Package },
+    { name: 'Kiosk / POS', href: '/admin/kiosk', icon: ShoppingCart },
     { name: 'Payroll & Salary', href: '/admin/payroll', icon: Banknote },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
@@ -103,10 +111,29 @@ const AdminLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-6">
-            <button className="relative text-outline hover:text-primary transition-colors p-2 rounded-full hover:bg-primary-fixed">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border-2 border-surface-container-lowest shadow-sm"></span>
-            </button>
+            <div className="relative group">
+              <button className="relative text-outline hover:text-primary transition-colors p-2 rounded-full hover:bg-primary-fixed">
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border-2 border-surface-container-lowest shadow-sm animate-pulse"></span>
+              </button>
+
+              {/* Notification Dropdown */}
+              <div className="absolute right-0 mt-2 w-80 bg-surface-container-lowest border border-outline-variant/40 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden translate-y-2 group-hover:translate-y-0">
+                <div className="p-4 border-b border-surface-container-highest bg-surface-container/50">
+                  <h3 className="font-bold text-on-surface">Field Operations Alerts</h3>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  <div className="p-4 border-b border-surface-container-highest hover:bg-surface-container/30 transition-colors cursor-pointer">
+                    <p className="text-body-sm text-on-surface"><span className="font-bold text-secondary">Rahul Kumar</span> checked-out from Acme Corp (Task TSK-001)</p>
+                    <p className="text-label-sm text-on-surface-variant mt-1">2 mins ago</p>
+                  </div>
+                  <div className="p-4 border-b border-surface-container-highest hover:bg-surface-container/30 transition-colors cursor-pointer">
+                    <p className="text-body-sm text-on-surface"><span className="font-bold text-primary">Rahul Kumar</span> checked-in at Acme Corp (Task TSK-001)</p>
+                    <p className="text-label-sm text-on-surface-variant mt-1">45 mins ago</p>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="h-8 w-px bg-surface-container-highest"></div>
             <div className="flex items-center gap-3 cursor-pointer group p-1.5 pr-3 rounded-full hover:bg-surface-container border border-transparent transition-all">
               <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-xs shadow-md">

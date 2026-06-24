@@ -1,30 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, MoreVertical, Banknote, CalendarDays, CheckCircle2, IndianRupee, Plus, AlertCircle, FileText } from 'lucide-react';
+import { Search, Filter, MoreVertical, Banknote, CalendarDays, CheckCircle2, IndianRupee, Plus, AlertCircle, FileText, Award } from 'lucide-react';
 import payrollData from '../../mockData/payroll.json';
 import staffData from '../../mockData/staff.json';
 import { useSearch } from '../../context/SearchContextProvider';
 
+interface PayrollRecord {
+  id: string;
+  staffId: string;
+  month: string;
+  baseSalary: number;
+  pf: number;
+  esi: number;
+  allowances: number;
+  incentives?: number;
+  incentiveType?: string;
+  leaves?: number;
+  salaryAdvance?: number;
+  netSalary: number;
+  status: string;
+  paymentDate: string;
+}
+
 const AdminPayroll: React.FC = () => {
   const { searchQuery } = useSearch();
-  const [payroll, setPayroll] = useState(payrollData);
+  const [payroll, setPayroll] = useState<PayrollRecord[]>(() => {
+    const saved = localStorage.getItem('payroll_records');
+    if (saved) return JSON.parse(saved);
+    return payrollData as PayrollRecord[];
+  });
   const [statusFilter, setStatusFilter] = useState('All');
+  const [activeTab, setActiveTab] = useState<'Payroll' | 'Incentives'>('Payroll');
+
+  const [adminIncentives, setAdminIncentives] = useState<any[]>(() => {
+    const saved = localStorage.getItem('staff_incentives');
+    if (saved) return JSON.parse(saved);
+    return [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('staff_incentives', JSON.stringify(adminIncentives));
+  }, [adminIncentives]);
   
   // Modal State
   const [showModal, setShowModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState('');
   const [paymentMonth, setPaymentMonth] = useState('');
-  const [baseSalary, setBaseSalary] = useState(0);
-  const [pf, setPf] = useState(0);
-  const [esi, setEsi] = useState(0);
-  const [allowances, setAllowances] = useState(0);
-  const [leaves, setLeaves] = useState(0);
-  const [salaryAdvance, setSalaryAdvance] = useState(0);
+  const [baseSalary, setBaseSalary] = useState<number | string>('');
+  const [pf, setPf] = useState<number | string>('');
+  const [esi, setEsi] = useState<number | string>('');
+  const [allowances, setAllowances] = useState<number | string>('');
+  const [leaves, setLeaves] = useState<number | string>('');
+  const [salaryAdvance, setSalaryAdvance] = useState<number | string>('');
   const [netSalary, setNetSalary] = useState(0);
+
+  // Incentive Modal State
+  const [showIncentiveModal, setShowIncentiveModal] = useState(false);
+  const [incentiveStaff, setIncentiveStaff] = useState('');
+  const [incentiveDate, setIncentiveDate] = useState('');
+  const [incentiveAmount, setIncentiveAmount] = useState<number | string>('');
+  const [incentiveType, setIncentiveType] = useState('Performance Bonus');
+  const [incentiveDesc, setIncentiveDesc] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('payroll_records', JSON.stringify(payroll));
+  }, [payroll]);
 
   // Auto-calculate Net Salary whenever inputs change
   useEffect(() => {
     // Basic logic: Base + Allowances - PF - ESI - (Leaves * 500) - Salary Advance
-    const leaveDeduction = leaves * 500; // Assuming 500 per leave for mock purposes
+    const leaveDeduction = Number(leaves) * 500; // Assuming 500 per leave for mock purposes
     const calculatedNet = Number(baseSalary) + Number(allowances) - Number(pf) - Number(esi) - leaveDeduction - Number(salaryAdvance);
     setNetSalary(calculatedNet > 0 ? calculatedNet : 0);
   }, [baseSalary, pf, esi, allowances, leaves, salaryAdvance]);
@@ -41,6 +85,13 @@ const AdminPayroll: React.FC = () => {
                           record.staffId.toLowerCase().includes(searchQuery.toLowerCase());
                           
     return matchesStatus && matchesSearch;
+  });
+
+  const filteredIncentives = adminIncentives.filter((record) => {
+    const staffName = staffData.find(s => s.id === record.staffId)?.name || record.staffId;
+    return searchQuery.trim() === '' || 
+           staffName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           record.staffId.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   const handleProcessPayroll = (e: React.FormEvent) => {
@@ -72,15 +123,37 @@ const AdminPayroll: React.FC = () => {
     // 3. Reset the form fields back to empty
     setSelectedStaff('');
     setPaymentMonth('');
-    setBaseSalary(0);
-    setPf(0);
-    setEsi(0);
-    setAllowances(0);
-    setLeaves(0);
-    setSalaryAdvance(0);
+    setBaseSalary('');
+    setPf('');
+    setEsi('');
+    setAllowances('');
+    setLeaves('');
+    setSalaryAdvance('');
     
     alert("Payroll processed successfully!");
     setShowModal(false);
+  };
+
+  const handleGrantIncentive = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newIncentive = {
+      id: `inc_${Date.now()}`,
+      staffId: incentiveStaff,
+      date: incentiveDate,
+      amount: Number(incentiveAmount),
+      type: incentiveType,
+      description: incentiveDesc
+    };
+    setAdminIncentives(prev => [newIncentive, ...prev]);
+
+    setIncentiveStaff('');
+    setIncentiveDate('');
+    setIncentiveAmount('');
+    setIncentiveType('Performance Bonus');
+    setIncentiveDesc('');
+    
+    alert("Incentive granted successfully!");
+    setShowIncentiveModal(false);
   };
 
   return (
@@ -91,42 +164,72 @@ const AdminPayroll: React.FC = () => {
         <div className="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-primary-container/50 to-transparent pointer-events-none"></div>
 
         <div className="relative z-10">
-          <h1 className="text-headline-lg text-on-surface">Payroll & Salary</h1>
-          <p className="text-body-md text-on-surface-variant mt-1">Manage staff compensation, PF, ESI, and allowances.</p>
+          <h1 className="text-headline-lg text-on-surface">Payroll & Incentives</h1>
+          <p className="text-body-md text-on-surface-variant mt-1">Manage staff compensation, PF, ESI, allowances, and bonuses.</p>
         </div>
         
+        <div className="relative z-10 flex gap-3">
+          {activeTab === 'Payroll' ? (
+            <button 
+              onClick={() => setShowModal(true)}
+              className="btn-primary flex items-center gap-2 px-5 py-3"
+            >
+              <Plus className="w-5 h-5" />
+              Process Payroll
+            </button>
+          ) : (
+            <button 
+              onClick={() => setShowIncentiveModal(true)}
+              className="btn-primary flex items-center gap-2 px-5 py-3 bg-tertiary hover:bg-tertiary/90 text-white"
+            >
+              <Award className="w-5 h-5" />
+              Grant Incentive
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-surface-container-highest gap-6">
         <button 
-          onClick={() => setShowModal(true)}
-          className="relative z-10 btn-primary flex items-center gap-2 px-5 py-3"
+          onClick={() => setActiveTab('Payroll')}
+          className={`pb-3 font-bold text-label-lg transition-colors border-b-2 ${activeTab === 'Payroll' ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'}`}
         >
-          <Plus className="w-5 h-5" />
-          Process Payroll
+          Payroll Records
+        </button>
+        <button 
+          onClick={() => setActiveTab('Incentives')}
+          className={`pb-3 font-bold text-label-lg transition-colors border-b-2 ${activeTab === 'Incentives' ? 'border-tertiary text-tertiary' : 'border-transparent text-on-surface-variant hover:text-on-surface'}`}
+        >
+          Staff Incentives
         </button>
       </div>
 
       {/* Main Content Box */}
       <div className="card !p-0 overflow-hidden">
         
-        {/* Toolbar (Filters) */}
-        <div className="p-6 border-b border-surface-container-highest flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-surface-container-lowest">
-          <h2 className="text-label-lg font-bold text-on-surface uppercase tracking-wider">Payroll History</h2>
-          
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <label className="text-label-md font-bold text-on-surface-variant uppercase tracking-wider hidden sm:block">Filter by Status:</label>
-            <select 
-              className="input-field w-full sm:w-auto px-4 py-2.5 cursor-pointer appearance-none"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="All">All Statuses</option>
-              <option value="Paid">Paid</option>
-              <option value="Pending">Pending</option>
-            </select>
-          </div>
-        </div>
+        {activeTab === 'Payroll' ? (
+          <>
+            {/* Toolbar (Filters) */}
+            <div className="p-6 border-b border-surface-container-highest flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-surface-container-lowest">
+              <h2 className="text-label-lg font-bold text-on-surface uppercase tracking-wider">Payroll History</h2>
+              
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <label className="text-label-md font-bold text-on-surface-variant uppercase tracking-wider hidden sm:block">Filter by Status:</label>
+                <select 
+                  className="input-field w-full sm:w-auto px-4 py-2.5 cursor-pointer appearance-none"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Pending">Pending</option>
+                </select>
+              </div>
+            </div>
 
-        {/* Data Table */}
-        <div className="overflow-x-auto">
+            {/* Data Table */}
+            <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100">
@@ -165,9 +268,9 @@ const AdminPayroll: React.FC = () => {
                     <div className="flex flex-col gap-1">
                       <span className="text-xs font-medium text-error">- ₹{record.pf.toLocaleString('en-IN')} (PF)</span>
                       <span className="text-xs font-medium text-error">- ₹{record.esi.toLocaleString('en-IN')} (ESI)</span>
-                      {(record.leaves > 0 || record.salaryAdvance > 0) && (
+                      {((record.leaves ?? 0) > 0 || (record.salaryAdvance ?? 0) > 0) && (
                          <span className="text-[10px] font-bold text-error uppercase tracking-wider">
-                           Leaves/Adv: ₹{((record.leaves || 0) * 500 + (record.salaryAdvance || 0)).toLocaleString('en-IN')}
+                           Leaves/Adv: ₹{((record.leaves ?? 0) * 500 + (record.salaryAdvance ?? 0)).toLocaleString('en-IN')}
                          </span>
                       )}
                     </div>
@@ -181,6 +284,11 @@ const AdminPayroll: React.FC = () => {
                       {record.allowances > 0 && (
                         <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">
                           Includes ₹{record.allowances} Allowance
+                        </span>
+                      )}
+                      {(record.incentives ?? 0) > 0 && (
+                        <span className="text-[10px] font-bold text-purple-500 uppercase tracking-wider">
+                          Includes ₹{record.incentives} Incentives
                         </span>
                       )}
                     </div>
@@ -213,6 +321,59 @@ const AdminPayroll: React.FC = () => {
             </tbody>
           </table>
         </div>
+        </>
+        ) : (
+          <>
+            <div className="p-6 border-b border-surface-container-highest flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-surface-container-lowest">
+              <h2 className="text-label-lg font-bold text-on-surface uppercase tracking-wider">Staff Incentives History</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[900px]">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-100">
+                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Date</th>
+                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Staff Member</th>
+                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Type</th>
+                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Description</th>
+                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredIncentives.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-8 text-center text-on-surface-variant">
+                        No incentives found.
+                      </td>
+                    </tr>
+                  )}
+                  {filteredIncentives.map((record) => (
+                    <tr key={record.id} className="hover:bg-slate-50/80 transition-colors group">
+                      <td className="px-6 py-4 text-sm font-medium text-slate-700">{record.date}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-slate-800">
+                            {staffData.find(s => s.id === record.staffId)?.name || record.staffId}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-tertiary/10 text-tertiary border-tertiary/20">
+                          {record.type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-500 max-w-[200px] truncate">{record.description || '-'}</td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="text-sm font-extrabold text-emerald-600">
+                          +₹{record.amount.toLocaleString('en-IN')}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Process Payroll Modal */}
@@ -259,7 +420,7 @@ const AdminPayroll: React.FC = () => {
               </div>
 
               <div className="bg-surface-container p-5 rounded-2xl border border-surface-container-highest space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-label-md font-bold text-on-surface uppercase tracking-wide">Base Salary (₹)</label>
                     <input
@@ -267,18 +428,18 @@ const AdminPayroll: React.FC = () => {
                       required
                       min="0"
                       className="input-field"
-                      value={baseSalary || ''}
-                      onChange={(e) => setBaseSalary(Number(e.target.value))}
+                      value={baseSalary}
+                      onChange={(e) => setBaseSalary(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-label-md font-bold text-on-surface uppercase tracking-wide">Allowances / Bonus (₹)</label>
+                    <label className="text-label-md font-bold text-on-surface uppercase tracking-wide">Allowances (₹)</label>
                     <input
                       type="number"
                       min="0"
                       className="input-field"
-                      value={allowances || ''}
-                      onChange={(e) => setAllowances(Number(e.target.value))}
+                      value={allowances}
+                      onChange={(e) => setAllowances(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                   </div>
                 </div>
@@ -290,8 +451,8 @@ const AdminPayroll: React.FC = () => {
                       type="number"
                       min="0"
                       className="input-field text-error font-bold bg-error-container/30 border-error/20 focus:border-error focus:ring-error/20"
-                      value={pf || ''}
-                      onChange={(e) => setPf(Number(e.target.value))}
+                      value={pf}
+                      onChange={(e) => setPf(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -300,8 +461,8 @@ const AdminPayroll: React.FC = () => {
                       type="number"
                       min="0"
                       className="input-field text-error font-bold bg-error-container/30 border-error/20 focus:border-error focus:ring-error/20"
-                      value={esi || ''}
-                      onChange={(e) => setEsi(Number(e.target.value))}
+                      value={esi}
+                      onChange={(e) => setEsi(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                   </div>
                 </div>
@@ -313,8 +474,8 @@ const AdminPayroll: React.FC = () => {
                       type="number"
                       min="0"
                       className="input-field text-error font-bold bg-error-container/30 border-error/20 focus:border-error focus:ring-error/20"
-                      value={leaves || ''}
-                      onChange={(e) => setLeaves(Number(e.target.value))}
+                      value={leaves}
+                      onChange={(e) => setLeaves(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -323,8 +484,8 @@ const AdminPayroll: React.FC = () => {
                       type="number"
                       min="0"
                       className="input-field text-error font-bold bg-error-container/30 border-error/20 focus:border-error focus:ring-error/20"
-                      value={salaryAdvance || ''}
-                      onChange={(e) => setSalaryAdvance(Number(e.target.value))}
+                      value={salaryAdvance}
+                      onChange={(e) => setSalaryAdvance(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                   </div>
                 </div>
@@ -354,6 +515,109 @@ const AdminPayroll: React.FC = () => {
                   className="btn-primary flex-1 px-4 py-3"
                 >
                   Confirm & Process
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Process Incentive Modal */}
+      {showIncentiveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-inverse-surface/60 backdrop-blur-sm" onClick={() => setShowIncentiveModal(false)}></div>
+          <div className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-xl relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-surface-container-highest bg-surface-container flex items-center gap-3">
+              <div className="w-10 h-10 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant flex items-center justify-center">
+                <Award className="w-5 h-5 text-tertiary" />
+              </div>
+              <div>
+                <h2 className="text-title-lg font-extrabold text-on-surface">Grant Incentive</h2>
+                <p className="text-label-md font-medium text-on-surface-variant">Reward staff for outstanding performance.</p>
+              </div>
+            </div>
+
+            <form className="p-6 space-y-6" onSubmit={handleGrantIncentive}>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5 col-span-2">
+                  <label className="text-label-md font-bold text-on-surface uppercase tracking-wide">Staff Member</label>
+                  <select 
+                    className="input-field appearance-none cursor-pointer"
+                    value={incentiveStaff}
+                    onChange={(e) => setIncentiveStaff(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Staff...</option>
+                    {staffData.map(s => (
+                      <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="space-y-1.5">
+                  <label className="text-label-md font-bold text-on-surface uppercase tracking-wide">Date</label>
+                  <input
+                    type="date"
+                    required
+                    className="input-field"
+                    value={incentiveDate}
+                    onChange={(e) => setIncentiveDate(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <label className="text-label-md font-bold text-on-surface uppercase tracking-wide">Amount (₹)</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    className="input-field"
+                    value={incentiveAmount}
+                    onChange={(e) => setIncentiveAmount(e.target.value === '' ? '' : Number(e.target.value))}
+                  />
+                </div>
+                
+                <div className="space-y-1.5 col-span-2">
+                  <label className="text-label-md font-bold text-on-surface uppercase tracking-wide">Incentive Type</label>
+                  <select 
+                    className="input-field cursor-pointer"
+                    value={incentiveType}
+                    onChange={(e) => setIncentiveType(e.target.value)}
+                    required
+                  >
+                    <option value="Performance Bonus">Performance Bonus</option>
+                    <option value="AMC Completion">AMC Completion</option>
+                    <option value="5-Star Rating">5-Star Rating</option>
+                    <option value="Installation">Installation</option>
+                    <option value="Same-day Resolution">Same-day Resolution</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5 col-span-2">
+                  <label className="text-label-md font-bold text-on-surface uppercase tracking-wide">Description (Optional)</label>
+                  <textarea
+                    rows={2}
+                    className="input-field resize-none"
+                    placeholder="e.g. Completed 10 installations in a week"
+                    value={incentiveDesc}
+                    onChange={(e) => setIncentiveDesc(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowIncentiveModal(false)}
+                  className="flex-1 px-4 py-3 rounded-xl font-bold text-on-surface-variant bg-surface-container hover:bg-surface-container-highest transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary bg-tertiary hover:bg-tertiary/90 text-white flex-1 px-4 py-3"
+                >
+                  Grant Incentive
                 </button>
               </div>
             </form>

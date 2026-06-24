@@ -7,7 +7,9 @@ import {
   Settings, 
   LogOut,
   Bell,
-  Menu
+  Menu,
+  Clock,
+  Award
 } from 'lucide-react';
 
 const StaffLayout: React.FC = () => {
@@ -15,8 +17,11 @@ const StaffLayout: React.FC = () => {
 
   const navigation = [
     { name: 'My Tasks', href: '/staff', icon: Briefcase },
+    { name: 'Daily Attendance', href: '/staff/attendance', icon: ClipboardList },
+    { name: 'Activity Log', href: '/staff/check-in', icon: Clock },
     { name: 'Route Map', href: '/staff/map', icon: MapPin },
-    { name: 'Inventory Used', href: '/staff/inventory', icon: ClipboardList },
+    { name: 'Inventory', href: '/staff/inventory', icon: ClipboardList },
+    { name: 'Incentives', href: '/staff/incentives', icon: Award },
     { name: 'Settings', href: '/staff/settings', icon: Settings },
   ];
 

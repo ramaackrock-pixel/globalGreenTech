@@ -5,15 +5,82 @@ import inventoryData from '../../mockData/inventory.json';
 import tasksData from '../../mockData/tasks.json';
 
 const AdminDashboard: React.FC = () => {
-  const totalCustomers = customersData.length;
-  const lowStockItems = inventoryData.filter(item => item.stock <= item.minStockAlert).length;
-  const openComplaints = tasksData.filter(task => task.type === 'Complaint' && task.status === 'Open').length;
+  const [customers, setCustomers] = React.useState<any[]>(customersData);
+  const [tasks, setTasks] = React.useState<any[]>(tasksData);
+  const [inventory, setInventory] = React.useState<any[]>(inventoryData);
+  const [kioskOrders, setKioskOrders] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    const savedCustomers = localStorage.getItem('customers_data');
+    if (savedCustomers) setCustomers(JSON.parse(savedCustomers));
+
+    const savedTasks = localStorage.getItem('staff_tasks');
+    if (savedTasks) setTasks(JSON.parse(savedTasks));
+
+    const savedInventory = localStorage.getItem('inventory_data');
+    if (savedInventory) setInventory(JSON.parse(savedInventory));
+
+    const savedKiosk = localStorage.getItem('kiosk_orders');
+    if (savedKiosk) setKioskOrders(JSON.parse(savedKiosk));
+  }, []);
+
+  const totalCustomers = customers.length;
+  const lowStockItems = inventory.filter(item => item.stock <= item.minStockAlert).length;
+  const openComplaints = tasks.filter(task => task.type === 'Complaint' && (task.status === 'Open' || task.status === 'Requested')).length;
+
+  const now = new Date();
+  
+  // Calculate dynamic Total Revenue based on ALL streams
+  const serviceRev = tasks
+    .filter(t => t.status === 'Completed')
+    .reduce((acc, t) => acc + (t.price || 0), 0);
+    
+  const kioskRev = kioskOrders.reduce((acc, o) => acc + (o.total || 0), 0);
+  
+  const productRev = customers.reduce((acc, c) => {
+    return acc + (c.products?.reduce((sum: number, p: any) => sum + (Number(p.price) || 0), 0) || 0);
+  }, 0);
+
+  const totalAllTimeRevenue = serviceRev + kioskRev + productRev;
+  const formattedRevenue = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(totalAllTimeRevenue);
+
+  // Dynamic Monthly Profitability
+  const currentMonthTasks = tasks.filter(t => {
+    if (t.status !== 'Completed') return false;
+    const tDate = new Date(t.checkOutTime || t.date || new Date());
+    return tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear();
+  });
+
+  const currentMonthKiosk = kioskOrders.filter(o => {
+    const oDate = new Date(o.timestamp || new Date());
+    return oDate.getMonth() === now.getMonth() && oDate.getFullYear() === now.getFullYear();
+  });
+
+  const currentMonthProducts = customers.flatMap(c => c.products || []).filter(p => {
+    const pDate = new Date(p.warrantyStart || new Date());
+    return pDate.getMonth() === now.getMonth() && pDate.getFullYear() === now.getFullYear();
+  });
+
+  // Calculate dynamic monthly revenue based on all streams
+  const monthlyServiceRev = currentMonthTasks.reduce((acc, t) => acc + (t.price || 0), 0);
+  const monthlyKioskRev = currentMonthKiosk.reduce((acc, o) => acc + (o.total || 0), 0);
+  const monthlyProductRev = currentMonthProducts.reduce((acc, p) => acc + (Number(p.price) || 0), 0);
+
+  const dynamicMonthlyRev = monthlyServiceRev + monthlyKioskRev + monthlyProductRev;
+  const monthlyRevenue = dynamicMonthlyRev;
+  
+  // Calculate costs (mocked as 43% of revenue)
+  const monthlyCosts = monthlyRevenue * 0.43;
+  const netProfit = monthlyRevenue - monthlyCosts;
+  const profitMargin = monthlyRevenue > 0 ? ((netProfit / monthlyRevenue) * 100).toFixed(1) : "0.0";
+
+  const formatCurrency = (val: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   const stats = [
     { title: 'Total Customers', value: totalCustomers.toString(), icon: Users, color: 'text-secondary', bg: 'bg-secondary-container/50', border: 'border-secondary-container', glow: 'shadow-secondary/20' },
     { title: 'Open Complaints', value: openComplaints.toString(), icon: Activity, color: 'text-tertiary', bg: 'bg-tertiary-container/50', border: 'border-tertiary-container', glow: 'shadow-tertiary/20' },
     { title: 'Low Stock Alerts', value: lowStockItems.toString(), icon: AlertTriangle, color: 'text-error', bg: 'bg-error-container/50', border: 'border-error-container', glow: 'shadow-error/20' },
-    { title: "Today's Revenue", value: '₹ 15,400', icon: IndianRupee, color: 'text-primary', bg: 'bg-primary-container/50', border: 'border-primary-container', glow: 'shadow-primary/20' },
+    { title: 'Total Revenue', value: formattedRevenue, icon: IndianRupee, color: 'text-primary', bg: 'bg-primary-container/50', border: 'border-primary-container', glow: 'shadow-primary/20' },
   ];
 
   return (
@@ -77,24 +144,31 @@ const AdminDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-container-highest">
-                {tasksData.slice(0, 5).map((task) => (
+                {tasks.slice().reverse().slice(0, 5).map((task) => (
                   <tr key={task.id} className="hover:bg-surface-container/50 transition-colors group">
-                    <td className="px-6 py-4 font-bold text-on-surface">{task.id}</td>
-                    <td className="px-6 py-4 text-on-surface-variant font-medium">{customersData.find(c => c.id === task.customerId)?.name || task.customerId}</td>
+                    <td className="px-6 py-4 font-bold text-on-surface">{task.id.toUpperCase()}</td>
+                    <td className="px-6 py-4 text-on-surface-variant font-medium">{customers.find(c => c.id === task.customerId)?.name || task.customerId}</td>
                     <td className="px-6 py-4">
-                      <span className={`badge-${task.type === 'Complaint' ? 'expired' : 'active'}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
+                        task.type === 'Complaint' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                        task.type === 'Installation' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                        'bg-purple-50 text-purple-600 border-purple-100'
+                      }`}>
                         {task.type}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        {task.status === 'Completed' ? (
-                          <CheckCircle className="w-4 h-4 text-primary" />
-                        ) : (
-                          <Clock className="w-4 h-4 text-secondary" />
-                        )}
-                        <span className="text-on-surface-variant text-label-md">{task.status}</span>
-                      </div>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                        task.status === 'Completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                        task.status === 'In Progress' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                        task.status === 'Scheduled' ? 'bg-slate-100 text-slate-600 border-slate-200' :
+                        'bg-red-50 text-red-600 border-red-100'
+                      }`}>
+                        {task.status === 'Completed' && <CheckCircle className="w-3 h-3" />}
+                        {task.status === 'In Progress' && <Clock className="w-3 h-3" />}
+                        {(task.status === 'Open' || task.status === 'Scheduled') && <Clock className="w-3 h-3" />}
+                        {task.status}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button className="text-outline hover:text-primary p-1.5 rounded-md hover:bg-primary-fixed transition-colors opacity-0 group-hover:opacity-100">
@@ -120,7 +194,7 @@ const AdminDashboard: React.FC = () => {
           
           <div className="p-0 overflow-y-auto max-h-[400px] relative z-10">
             <ul className="divide-y divide-surface-container-highest">
-              {inventoryData.filter(i => i.stock <= i.minStockAlert).map(item => (
+              {inventory.filter(i => i.stock <= i.minStockAlert).map(item => (
                 <li key={item.id} className="p-6 flex justify-between items-center hover:bg-error-container/30 transition-colors group">
                   <div>
                     <p className="text-body-md font-bold text-on-surface group-hover:text-error transition-colors">{item.name}</p>
@@ -165,11 +239,11 @@ const AdminDashboard: React.FC = () => {
             <div className="flex gap-4">
               <div className="flex-1 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-sm">
                 <p className="text-label-sm text-on-surface-variant uppercase">Total Revenue</p>
-                <p className="text-title-lg font-bold text-primary mt-1">₹ 4,25,000</p>
+                <p className="text-title-lg font-bold text-primary mt-1">{formatCurrency(monthlyRevenue)}</p>
               </div>
               <div className="flex-1 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-sm">
                 <p className="text-label-sm text-on-surface-variant uppercase">Total Costs</p>
-                <p className="text-title-lg font-bold text-error mt-1">₹ 1,85,500</p>
+                <p className="text-title-lg font-bold text-error mt-1">{formatCurrency(monthlyCosts)}</p>
               </div>
             </div>
 
@@ -204,11 +278,11 @@ const AdminDashboard: React.FC = () => {
 
             <div className="bg-primary-container px-5 py-3.5 rounded-xl border border-primary/20 flex justify-between items-center">
               <div>
-                <p className="text-label-sm text-on-primary-container font-bold uppercase tracking-widest">Net Profit Margin</p>
-                <p className="text-title-lg font-black text-on-surface mt-0.5">₹ 2,39,500</p>
+                <p className="text-label-sm text-on-primary-container font-bold uppercase tracking-widest">Net Profit</p>
+                <p className="text-title-lg font-black text-on-surface mt-0.5">{formatCurrency(netProfit)}</p>
               </div>
               <div className="bg-surface-container-lowest px-3 py-1 rounded-lg border border-outline-variant/30 text-primary font-bold shadow-sm text-sm">
-                +56.3%
+                +{profitMargin}%
               </div>
             </div>
           </div>
@@ -229,56 +303,71 @@ const AdminDashboard: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex-1 flex flex-col justify-between space-y-4">
-            <div className="flex gap-4">
-              <div className="flex-1 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-sm">
-                <p className="text-label-sm text-on-surface-variant uppercase">Accounts Renewing</p>
-                <p className="text-title-lg font-bold text-on-surface mt-1">42</p>
-              </div>
-              <div className="flex-1 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-sm">
-                <p className="text-label-sm text-on-surface-variant uppercase">Projected Value</p>
-                <p className="text-title-lg font-bold text-secondary mt-1">₹ 84,000</p>
-              </div>
-            </div>
+            <div className="flex-1 flex flex-col justify-between space-y-4">
+              {(() => {
+                const now = new Date();
+                const thirtyDaysFromNow = new Date();
+                thirtyDaysFromNow.setDate(now.getDate() + 30);
+                
+                const upcomingRenewals = customers.filter(c => {
+                  if (!c.nextAmcDate) return false;
+                  const amcDate = new Date(c.nextAmcDate);
+                  return amcDate >= now && amcDate <= thirtyDaysFromNow;
+                }).sort((a, b) => new Date(a.nextAmcDate).getTime() - new Date(b.nextAmcDate).getTime());
 
-            <div className="flex-1 bg-surface-container p-4 rounded-xl border border-outline-variant/30 flex flex-col justify-center">
-              <p className="text-label-sm font-bold text-on-surface-variant mb-4 uppercase tracking-wider">High Value Renewals Pipeline</p>
-              <div className="space-y-2.5 flex-1 flex flex-col justify-center">
-                <div className="flex justify-between items-center bg-surface-container-lowest px-3 py-2.5 rounded-lg border border-outline-variant/30 shadow-sm hover:border-secondary/30 transition-colors cursor-pointer">
-                  <div>
-                    <p className="text-label-md font-bold text-on-surface">TechCorp Industries</p>
-                    <p className="text-[10px] text-on-surface-variant font-medium mt-0.5 uppercase tracking-wider">Expires in 5 days</p>
-                  </div>
-                  <span className="text-label-md font-black text-secondary">₹ 15,000</span>
-                </div>
-                <div className="flex justify-between items-center bg-surface-container-lowest px-3 py-2.5 rounded-lg border border-outline-variant/30 shadow-sm hover:border-secondary/30 transition-colors cursor-pointer">
-                  <div>
-                    <p className="text-label-md font-bold text-on-surface">Global Retailers Ltd</p>
-                    <p className="text-[10px] text-on-surface-variant font-medium mt-0.5 uppercase tracking-wider">Expires in 12 days</p>
-                  </div>
-                  <span className="text-label-md font-black text-secondary">₹ 12,500</span>
-                </div>
-                <div className="flex justify-between items-center bg-surface-container-lowest px-3 py-2.5 rounded-lg border border-outline-variant/30 shadow-sm hover:border-secondary/30 transition-colors cursor-pointer">
-                  <div>
-                    <p className="text-label-md font-bold text-on-surface">Apex Manufacturing</p>
-                    <p className="text-[10px] text-on-surface-variant font-medium mt-0.5 uppercase tracking-wider">Expires in 18 days</p>
-                  </div>
-                  <span className="text-label-md font-black text-secondary">₹ 10,000</span>
-                </div>
-              </div>
-            </div>
+                const overdueRenewals = customers.filter(c => {
+                  if (!c.nextAmcDate) return false;
+                  const amcDate = new Date(c.nextAmcDate);
+                  return amcDate < now;
+                });
 
-            <div className="bg-secondary-container px-5 py-3.5 rounded-xl border border-secondary/20 flex justify-between items-center cursor-pointer hover:bg-secondary/20 transition-colors">
-              <div>
-                <p className="text-label-sm text-on-secondary-container font-bold uppercase tracking-widest">Action Required</p>
-                <p className="text-title-lg font-black text-on-surface mt-0.5">12 Overdue</p>
-              </div>
-              <div className="bg-surface-container-lowest px-3 py-1 rounded-lg border border-outline-variant text-secondary font-bold shadow-sm text-sm flex items-center gap-2">
-                Send All
-                <CalendarDays className="w-4 h-4" />
-              </div>
+                return (
+                  <>
+                    <div className="flex gap-4">
+                      <div className="flex-1 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-sm">
+                        <p className="text-label-sm text-on-surface-variant uppercase">Accounts Renewing</p>
+                        <p className="text-title-lg font-bold text-on-surface mt-1">{upcomingRenewals.length}</p>
+                      </div>
+                      <div className="flex-1 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-sm">
+                        <p className="text-label-sm text-on-surface-variant uppercase">Projected Value</p>
+                        <p className="text-title-lg font-bold text-secondary mt-1">₹ {new Intl.NumberFormat('en-IN').format(upcomingRenewals.length * 3500)}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 bg-surface-container p-4 rounded-xl border border-outline-variant/30 flex flex-col justify-center">
+                      <p className="text-label-sm font-bold text-on-surface-variant mb-4 uppercase tracking-wider">High Value Renewals Pipeline</p>
+                      <div className="space-y-2.5 flex-1 flex flex-col justify-center overflow-y-auto max-h-[150px]">
+                        {upcomingRenewals.length > 0 ? upcomingRenewals.slice(0, 3).map(c => {
+                          const daysLeft = Math.ceil((new Date(c.nextAmcDate).getTime() - now.getTime()) / (1000 * 3600 * 24));
+                          return (
+                            <div key={c.id} className="flex justify-between items-center bg-surface-container-lowest px-3 py-2.5 rounded-lg border border-outline-variant/30 shadow-sm hover:border-secondary/30 transition-colors cursor-pointer">
+                              <div>
+                                <p className="text-label-md font-bold text-on-surface">{c.name}</p>
+                                <p className="text-[10px] text-on-surface-variant font-medium mt-0.5 uppercase tracking-wider">Expires in {daysLeft} days</p>
+                              </div>
+                              <span className="text-label-md font-black text-secondary">₹ {new Intl.NumberFormat('en-IN').format(c.products?.length * 3500 || 3500)}</span>
+                            </div>
+                          );
+                        }) : (
+                          <div className="text-center text-sm font-medium text-slate-500 py-4">No upcoming renewals in 30 days</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="bg-secondary-container px-5 py-3.5 rounded-xl border border-secondary/20 flex justify-between items-center cursor-pointer hover:bg-secondary/20 transition-colors">
+                      <div>
+                        <p className="text-label-sm text-on-secondary-container font-bold uppercase tracking-widest">Action Required</p>
+                        <p className="text-title-lg font-black text-on-surface mt-0.5">{overdueRenewals.length} Overdue</p>
+                      </div>
+                      <div className="bg-surface-container-lowest px-3 py-1 rounded-lg border border-outline-variant text-secondary font-bold shadow-sm text-sm flex items-center gap-2">
+                        Send All
+                        <CalendarDays className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
-          </div>
         </div>
 
       </div>

@@ -4,7 +4,7 @@
     "customerId": "c1",
     "type": "Complaint",
     "status": "Open",
-    "assignedTo": "s1",
+    "assignedTo": "Unassigned",
     "date": "2026-06-17",
     "description": "Low water pressure from main commercial line."
   },

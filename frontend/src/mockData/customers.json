@@ -4,7 +4,7 @@
     "name": "Acme Corp",
     "category": "Commercial",
     "phone": "+1234567890",
-    "address": "123 Business Rd, Tech Park",
+    "address": "ackrock technologies",
     "amcStatus": "Active",
     "nextAmcDate": "2026-07-15",
     "products": [
@@ -13,7 +13,11 @@
         "name": "Commercial RO 500LPH",
         "warrantyStart": "2025-01-10",
         "warrantyEnd": "2027-01-10",
-        "coveredItems": ["Pump", "Membrane", "Panel"]
+        "coveredItems": [
+          "Pump",
+          "Membrane",
+          "Panel"
+        ]
       }
     ]
   },
@@ -31,7 +35,10 @@
         "name": "Under-sink RO 15LPH",
         "warrantyStart": "2024-05-20",
         "warrantyEnd": "2025-05-20",
-        "coveredItems": ["Filters", "Adapter"]
+        "coveredItems": [
+          "Filters",
+          "Adapter"
+        ]
       }
     ]
   }

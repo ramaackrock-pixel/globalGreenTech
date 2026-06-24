@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Package, Filter, MoreVertical, Plus, Download, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Package, Filter, MoreVertical, Plus, Download, AlertTriangle, CheckCircle2, User, Clock, Check, X } from 'lucide-react';
 import inventoryData from '../../mockData/inventory.json';
 import { useSearch } from '../../context/SearchContextProvider';
 import InventoryModal from './InventoryModal';
@@ -8,7 +8,32 @@ const AdminInventory: React.FC = () => {
   const [stockFilter, setStockFilter] = useState<string>('All');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [inventory, setInventory] = useState<any[]>(inventoryData);
+  const [requests, setRequests] = useState<any[]>([]);
   const { searchQuery } = useSearch();
+
+  useEffect(() => {
+    const saved = localStorage.getItem('inventory_requests');
+    if (saved) setRequests(JSON.parse(saved));
+  }, []);
+
+  const handleRequestAction = (reqId: string, action: 'Approved' | 'Denied') => {
+    const updatedReqs = requests.map(r => r.id === reqId ? { ...r, status: action } : r);
+    setRequests(updatedReqs);
+    localStorage.setItem('inventory_requests', JSON.stringify(updatedReqs));
+
+    if (action === 'Approved') {
+      const req = requests.find(r => r.id === reqId);
+      if (req) {
+        setInventory(prev => prev.map(item => {
+          // Note: using basic string matching for prototype
+          if (item.name === req.partName || req.partName.includes(item.name)) {
+            return { ...item, stock: Math.max(0, item.stock - parseInt(req.quantity)) };
+          }
+          return item;
+        }));
+      }
+    }
+  };
 
   const handleSaveItem = (newItem: any) => {
     // InventoryModal passes up { name, sku, price, stock, minStockAlert } inside 'newItem'
@@ -65,6 +90,40 @@ const AdminInventory: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Pending Requests Section */}
+      {requests.filter(r => r.status === 'Pending').length > 0 && (
+        <div className="bg-amber-50/50 rounded-2xl border border-amber-200/50 overflow-hidden">
+          <div className="p-4 border-b border-amber-200/50 bg-amber-100/30 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-amber-600" />
+            <h2 className="text-label-lg font-bold text-amber-900 uppercase tracking-wider">Pending Staff Requests</h2>
+          </div>
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {requests.filter(r => r.status === 'Pending').map(req => (
+              <div key={req.id} className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-body-md font-extrabold text-slate-800">{req.quantity}x {req.partName}</span>
+                    <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded uppercase tracking-widest">Pending</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs font-medium text-slate-500 mb-4">
+                    <div className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />{req.staffName}</div>
+                    <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{new Date(req.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => handleRequestAction(req.id, 'Denied')} className="flex-1 py-2 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg flex items-center justify-center gap-1 transition-colors">
+                    <X className="w-3.5 h-3.5" /> Deny
+                  </button>
+                  <button onClick={() => handleRequestAction(req.id, 'Approved')} className="flex-1 py-2 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg flex items-center justify-center gap-1 transition-colors">
+                    <Check className="w-3.5 h-3.5" /> Approve
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Main Content Box */}
       <div className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">

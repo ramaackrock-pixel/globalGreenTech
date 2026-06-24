@@ -1,14 +1,37 @@
-import React, { useState } from 'react';
-import { Filter, MoreVertical, ShieldAlert, ShieldCheck, Download, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Filter, MoreVertical, ShieldAlert, ShieldCheck, Download, Plus, PackagePlus, X } from 'lucide-react';
 import customersData from '../../mockData/customers.json';
 import { useSearch } from '../../context/SearchContextProvider'
 import CustomerModal from './CustomerModal';
+import AdminCustomerDetailsModal from './AdminCustomerDetailsModal';
 
 const AdminCustomers: React.FC = () => {
   const [amcFilter, setAmcFilter] = useState<string>('All');
   const [categoryFilter, setCategoryFilter] = useState<string>('All Categories');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [customers, setCustomers] = useState<any[]>(customersData);
+  const [customers, setCustomers] = useState<any[]>(() => {
+    const saved = localStorage.getItem('customers_data');
+    if (saved) return JSON.parse(saved);
+    return customersData;
+  });
+
+  const [addProductModalOpen, setAddProductModalOpen] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [viewDetailsCustomer, setViewDetailsCustomer] = useState<any | null>(null);
+  
+  // New Product State
+  const [newProductName, setNewProductName] = useState('');
+  const [productPrice, setProductPrice] = useState('');
+  const [warrantyStart, setWarrantyStart] = useState(new Date().toISOString().split('T')[0]);
+  const [warrantyEnd, setWarrantyEnd] = useState('');
+  const [coveredItems, setCoveredItems] = useState('Pump, Membrane, Adapter, Filters');
+  const [includesAmc, setIncludesAmc] = useState('Yes');
+  const [freeServices, setFreeServices] = useState('3');
+  const [serviceFrequency, setServiceFrequency] = useState('Quarterly');
+
+  useEffect(() => {
+    localStorage.setItem('customers_data', JSON.stringify(customers));
+  }, [customers]);
 
   const { searchQuery } = useSearch();
 
@@ -31,6 +54,41 @@ const AdminCustomers: React.FC = () => {
     
     setIsModalOpen(false);
     setCustomers((prev) => [...prev, customer]);
+  };
+
+  const handleAddProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCustomerId) return;
+
+    const newProduct = {
+      id: `p${Math.floor(Math.random() * 10000)}`,
+      name: newProductName,
+      price: productPrice,
+      warrantyStart: warrantyStart,
+      warrantyEnd: warrantyEnd,
+      coveredItems: coveredItems.split(',').map(i => i.trim()),
+      amc: {
+        included: includesAmc === 'Yes',
+        freeServices: parseInt(freeServices) || 0,
+        frequency: serviceFrequency
+      }
+    };
+
+    setCustomers(prev => prev.map(c => {
+      if (c.id === selectedCustomerId) {
+        return { ...c, products: [...c.products, newProduct] };
+      }
+      return c;
+    }));
+
+    setAddProductModalOpen(false);
+    setNewProductName('');
+    setProductPrice('');
+    setWarrantyEnd('');
+    setIncludesAmc('Yes');
+    setFreeServices('3');
+    setServiceFrequency('Quarterly');
+    alert('Product and Warranty successfully registered to customer!');
   };
 
   return (
@@ -102,7 +160,11 @@ const AdminCustomers: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
 
               {filteredCustomers.map((customer) => (
-                <tr key={customer.id} className="hover:bg-slate-50/80 transition-colors group">
+                <tr 
+                  key={customer.id} 
+                  className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                  onClick={() => setViewDetailsCustomer(customer)}
+                >
 
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
@@ -156,9 +218,25 @@ const AdminCustomers: React.FC = () => {
                   </td>
 
                   <td className="px-6 py-4 text-right">
-                    <button className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent opening details modal
+                          setSelectedCustomerId(customer.id);
+                          setAddProductModalOpen(true);
+                        }}
+                        className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors font-bold text-[10px] uppercase tracking-wider flex items-center gap-1"
+                        title="Register New Product"
+                      >
+                        <PackagePlus className="w-4 h-4" /> Add Product
+                      </button>
+                      <button 
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                      >
+                        <MoreVertical className="w-5 h-5" />
+                      </button>
+                    </div>
                   </td>
 
                 </tr>
@@ -174,6 +252,134 @@ const AdminCustomers: React.FC = () => {
         onClose={() => setIsModalOpen(false)} 
         onSave={handleSaveCustomer} 
       />
+
+      {/* Customer Details Modal */}
+      {viewDetailsCustomer && (
+        <AdminCustomerDetailsModal 
+          customer={viewDetailsCustomer} 
+          onClose={() => setViewDetailsCustomer(null)} 
+        />
+      )}
+
+      {/* Add Product Modal */}
+      {addProductModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setAddProductModalOpen(false)}></div>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg relative z-10 p-6 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-xl font-black text-slate-800">Register New Product</h2>
+                <p className="text-sm font-medium text-slate-500">Add an RO system to {customers.find(c => c.id === selectedCustomerId)?.name}</p>
+              </div>
+              <button onClick={() => setAddProductModalOpen(false)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddProduct} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">Product Name / Model</label>
+                  <input 
+                    type="text" 
+                    value={newProductName}
+                    onChange={(e) => setNewProductName(e.target.value)}
+                    placeholder="e.g. Commercial RO 1000LPH"
+                    className="w-full p-3 rounded-xl border border-slate-300 focus:border-primary-500 outline-none"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">Sale Price (₹)</label>
+                  <input 
+                    type="number" 
+                    value={productPrice}
+                    onChange={(e) => setProductPrice(e.target.value)}
+                    placeholder="e.g. 25000"
+                    className="w-full p-3 rounded-xl border border-slate-300 focus:border-primary-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">Warranty Start</label>
+                  <input 
+                    type="date" 
+                    value={warrantyStart}
+                    onChange={(e) => setWarrantyStart(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-slate-300 focus:border-primary-500 outline-none"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">Warranty End</label>
+                  <input 
+                    type="date" 
+                    value={warrantyEnd}
+                    onChange={(e) => setWarrantyEnd(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-slate-300 focus:border-primary-500 outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">AMC Included</label>
+                  <select 
+                    value={includesAmc}
+                    onChange={(e) => setIncludesAmc(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-slate-300 focus:border-primary-500 outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">Free Services</label>
+                  <input 
+                    type="number" 
+                    value={freeServices}
+                    onChange={(e) => setFreeServices(e.target.value)}
+                    disabled={includesAmc === 'No'}
+                    className="w-full p-3 rounded-xl border border-slate-300 focus:border-primary-500 outline-none disabled:bg-slate-100 disabled:text-slate-400"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">Frequency</label>
+                  <select 
+                    value={serviceFrequency}
+                    onChange={(e) => setServiceFrequency(e.target.value)}
+                    disabled={includesAmc === 'No'}
+                    className="w-full p-3 rounded-xl border border-slate-300 focus:border-primary-500 outline-none appearance-none cursor-pointer disabled:bg-slate-100 disabled:text-slate-400"
+                  >
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="Tri-Annual">Tri-Annual</option>
+                    <option value="Bi-Annual">Bi-Annual</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">Covered Items (Comma separated)</label>
+                <textarea 
+                  value={coveredItems}
+                  onChange={(e) => setCoveredItems(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-slate-300 focus:border-primary-500 outline-none resize-none"
+                  rows={2}
+                  required
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setAddProductModalOpen(false)} className="flex-1 py-3 font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 py-3 font-bold text-white bg-gradient-to-r from-[#00873E] to-[#006b31] shadow-[0_4px_12px_-2px_rgba(0,135,62,0.4)] hover:shadow-[0_8px_16px_-4px_rgba(0,135,62,0.5)] rounded-xl transition-all">Register Product</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

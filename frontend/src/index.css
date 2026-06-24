@@ -76,9 +76,7 @@
   --animate-liquid-slow: liquid 18s infinite alternate-reverse ease-in-out;
 }
 
-@theme {
-  @variant dark (&:where(.dark, .dark *));
-}
+@variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root.dark {

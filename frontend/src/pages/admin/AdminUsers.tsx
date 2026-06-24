@@ -11,6 +11,7 @@ interface UserAccount {
   email: string;
   role: UserRole;
   status: UserStatus;
+  photoUrl?: string;
 }
 
 const mockUsers: UserAccount[] = [
@@ -29,6 +30,7 @@ const AdminUsers: React.FC = () => {
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState<UserRole>('Staff');
   const [newPassword, setNewPassword] = useState('');
+  const [newPhoto, setNewPhoto] = useState<File | null>(null);
   const [roleFilter, setRoleFilter] = useState('All');
 
   const handleAddUser = (e: React.FormEvent) => {
@@ -38,7 +40,8 @@ const AdminUsers: React.FC = () => {
       name: newName,
       email: newEmail,
       role: newRole,
-      status: 'Active'
+      status: 'Active',
+      photoUrl: newPhoto ? URL.createObjectURL(newPhoto) : undefined
     };
 
     setUsers([...users, newUser]);
@@ -49,6 +52,7 @@ const AdminUsers: React.FC = () => {
     setNewEmail('');
     setNewRole('Staff');
     setNewPassword('');
+    setNewPhoto(null);
 
     // Simulate notification
     alert(`Successfully created account for ${newEmail}`);
@@ -122,9 +126,13 @@ const AdminUsers: React.FC = () => {
                 <tr key={user.id} className="hover:bg-surface-container/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-bold text-on-surface-variant border border-outline-variant">
-                        {user.name.charAt(0)}
-                      </div>
+                      {user.photoUrl ? (
+                        <img src={user.photoUrl} alt={user.name} className="w-10 h-10 rounded-full object-cover border border-outline-variant shadow-sm" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-bold text-on-surface-variant border border-outline-variant">
+                          {user.name.charAt(0)}
+                        </div>
+                      )}
                       <div>
                         <p className="text-body-md font-bold text-on-surface">{user.name}</p>
                         <p className="text-label-md text-on-surface-variant">{user.email}</p>
@@ -181,6 +189,20 @@ const AdminUsers: React.FC = () => {
                     required
                     className="input-field"
                     placeholder="e.g. John Doe"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-label-md font-bold text-on-surface uppercase tracking-wide">Profile Photo / Logo</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        setNewPhoto(e.target.files[0]);
+                      }
+                    }}
+                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer border border-slate-200 rounded-xl"
                   />
                 </div>
 

@@ -1,13 +1,14 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { 
-  Home, 
-  Settings, 
-  ShieldCheck, 
-  Gift, 
+import {
+  Home,
+  Settings,
+  ShieldCheck,
+  Gift,
   LogOut,
   Bell,
-  Menu
+  Menu,
+  AlertTriangle
 } from 'lucide-react';
 
 const CustomerLayout: React.FC = () => {
@@ -16,15 +17,14 @@ const CustomerLayout: React.FC = () => {
   const navigation = [
     { name: 'My Dashboard', href: '/customer', icon: Home },
     { name: 'Warranties & Products', href: '/customer/warranties', icon: ShieldCheck },
+    { name: 'My Complaints', href: '/customer/complaints', icon: AlertTriangle },
     { name: 'Referrals', href: '/customer/referrals', icon: Gift },
     { name: 'Account Settings', href: '/customer/settings', icon: Settings },
   ];
 
   return (
     <div className="flex h-screen bg-background text-on-surface font-sans text-sm selection:bg-primary/30">
-      {/* Sidebar - iOS 26 Liquid Glass Theme */}
       <aside className="w-64 hidden md:flex flex-col relative overflow-hidden shadow-[8px_0_40px_rgba(0,94,154,0.08)] z-20 border-r border-outline-variant/40 bg-surface-container-lowest">
-        {/* Liquid Orbs Layer (Behind the glass) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-10 -left-10 w-64 h-64 bg-primary/20 rounded-full mix-blend-multiply blur-[50px] animate-liquid"></div>
           <div className="absolute top-40 -right-20 w-72 h-72 bg-secondary/20 rounded-full mix-blend-multiply blur-[60px] animate-liquid-slow"></div>
@@ -41,7 +41,7 @@ const CustomerLayout: React.FC = () => {
             <span className="text-on-surface font-extrabold tracking-wide drop-shadow-[0_1px_1px_rgba(255,255,255,1)]">Green Tech</span>
           </div>
         </div>
-        
+
         <nav className="flex-1 py-6 overflow-y-auto relative z-10">
           <div className="px-6 mb-3 text-label-md text-on-surface-variant uppercase tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,1)]">Client Portal</div>
           <ul className="space-y-1.5 px-3">
@@ -52,11 +52,10 @@ const CustomerLayout: React.FC = () => {
                 <li key={item.name}>
                   <Link
                     to={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-300 ${
-                      isActive 
-                        ? 'bg-primary-container/10 text-primary font-extrabold border border-primary/20 shadow-sm' 
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-300 ${isActive
+                        ? 'bg-primary-container/10 text-primary font-extrabold border border-primary/20 shadow-sm'
                         : 'hover:bg-surface-container hover:text-on-surface border border-transparent font-medium text-on-surface-variant'
-                    }`}
+                      }`}
                   >
                     <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-primary' : 'text-outline group-hover:text-on-surface'}`} />
                     {item.name}
@@ -88,7 +87,7 @@ const CustomerLayout: React.FC = () => {
             </button>
             <h2 className="text-body-sm font-bold text-on-surface hidden sm:block bg-surface-container px-3 py-1 rounded-full border border-outline-variant">Customer Portal</h2>
           </div>
-          
+
           <div className="flex items-center gap-6">
             <button className="relative text-outline hover:text-primary transition-colors p-2 rounded-full hover:bg-primary-fixed">
               <Bell className="w-5 h-5" />
@@ -114,16 +113,15 @@ const CustomerLayout: React.FC = () => {
 
       {/* Bottom Navigation for Mobile */}
       <nav className="md:hidden bg-surface-container-lowest/90 backdrop-blur-md border-t border-surface-container-highest fixed bottom-0 w-full flex justify-around p-2 pb-safe z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        {navigation.slice(0,4).map((item) => {
+        {navigation.slice(0, 4).map((item) => {
           const isActive = location.pathname === item.href;
           const Icon = item.icon;
           return (
             <Link
               key={item.name}
               to={item.href}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${
-                isActive ? 'text-primary bg-primary-fixed' : 'text-outline hover:bg-surface-container'
-              }`}
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive ? 'text-primary bg-primary-fixed' : 'text-outline hover:bg-surface-container'
+                }`}
             >
               <Icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-outline'}`} />
               <span className="text-label-md">{item.name.split(' ')[0]}</span>

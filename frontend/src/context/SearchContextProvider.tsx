@@ -6,6 +6,7 @@ interface SearchContextType {
     setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
 }
 
+
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
 interface SearchContextProviderProps {
