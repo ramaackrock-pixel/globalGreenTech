@@ -25,7 +25,6 @@ const AdminLayout: React.FC = () => {
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-    { name: 'Live Tracking', href: '/admin/tracking', icon: Navigation },
     { name: 'Staff Attendance', href: '/admin/attendance', icon: CalendarClock },
     { name: 'Job Gallery', href: '/admin/photos', icon: Images },
     { name: 'User Accounts', href: '/admin/users', icon: ShieldCheck },
