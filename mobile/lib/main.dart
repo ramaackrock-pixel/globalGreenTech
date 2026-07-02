@@ -80,7 +80,7 @@ class AuthGate extends ConsumerWidget {
       }
     }
 
-    // Default to login page
-    return const LoginScreen();
+    // Default to guest marketplace dashboard
+    return const CustomerDashboardScreen(isGuest: true);
   }
 }

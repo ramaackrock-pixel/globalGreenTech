@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 // Customer Dashboard Metrics
 class CustomerDashboardMetrics {
   final int installedSystems;
@@ -127,5 +129,123 @@ class CustomerInvoice {
       status: json['status']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
     );
+  }
+}
+
+// Marketplace product categories
+enum MarketCategory { all, purifiers, filters, services }
+
+// Product class representing RO products/services
+class MarketProduct {
+  final String id;
+  final String name;
+  final String description;
+  final double price;
+  final double mrp;
+  final double rating;
+  final int reviewsCount;
+  final MarketCategory category;
+  final String badge;
+  final IconData icon;
+  final String? imagePath;
+  final Map<String, String> specifications;
+
+  const MarketProduct({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.price,
+    required this.mrp,
+    required this.rating,
+    required this.reviewsCount,
+    required this.category,
+    required this.badge,
+    required this.icon,
+    this.imagePath,
+    required this.specifications,
+  });
+
+  double get discountPercentage => mrp > price ? ((mrp - price) / mrp * 100) : 0.0;
+
+  factory MarketProduct.fromJson(Map<String, dynamic> json) {
+    return MarketProduct(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      mrp: (json['mrp'] as num?)?.toDouble() ?? 0.0,
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      reviewsCount: (json['reviewsCount'] as num?)?.toInt() ?? 0,
+      category: _parseCategory(json['category']?.toString()),
+      badge: json['badge']?.toString() ?? '',
+      icon: _parseIcon(json['icon']?.toString()),
+      imagePath: json['imagePath']?.toString(),
+      specifications: Map<String, String>.from(json['specifications'] ?? {}),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'price': price,
+      'mrp': mrp,
+      'rating': rating,
+      'reviewsCount': reviewsCount,
+      'category': category.name,
+      'badge': badge,
+      'icon': _getIconString(icon),
+      'imagePath': imagePath,
+      'specifications': specifications,
+    };
+  }
+
+  static MarketCategory _parseCategory(String? categoryStr) {
+    switch (categoryStr) {
+      case 'purifiers':
+        return MarketCategory.purifiers;
+      case 'filters':
+        return MarketCategory.filters;
+      case 'services':
+        return MarketCategory.services;
+      default:
+        return MarketCategory.all;
+    }
+  }
+
+  static IconData _parseIcon(String? iconStr) {
+    switch (iconStr) {
+      case 'water_drop':
+        return Icons.water_drop_outlined;
+      case 'kitchen':
+        return Icons.kitchen_outlined;
+      case 'solar_power':
+        return Icons.solar_power_outlined;
+      case 'layers':
+        return Icons.layers_outlined;
+      case 'blur_linear':
+        return Icons.blur_linear;
+      case 'grain':
+        return Icons.grain_outlined;
+      case 'verified_user':
+        return Icons.verified_user_outlined;
+      case 'cleaning_services':
+        return Icons.cleaning_services_outlined;
+      default:
+        return Icons.shopping_bag_outlined;
+    }
+  }
+
+  static String _getIconString(IconData icon) {
+    if (icon == Icons.water_drop_outlined) return 'water_drop';
+    if (icon == Icons.kitchen_outlined) return 'kitchen';
+    if (icon == Icons.solar_power_outlined) return 'solar_power';
+    if (icon == Icons.layers_outlined) return 'layers';
+    if (icon == Icons.blur_linear) return 'blur_linear';
+    if (icon == Icons.grain_outlined) return 'grain';
+    if (icon == Icons.verified_user_outlined) return 'verified_user';
+    if (icon == Icons.cleaning_services_outlined) return 'cleaning_services';
+    return 'shopping_bag';
   }
 }

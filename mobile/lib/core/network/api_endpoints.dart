@@ -25,4 +25,5 @@ class ApiEndpoints {
   static const String customerProducts = '/customer/products';
   static const String customerServiceRequests = '/customer/service-requests';
   static const String customerInvoices = '/customer/invoices';
+  static const String marketplaceProducts = '/customer/marketplace-products';
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -11,26 +12,49 @@ import 'views/customer_billing_view.dart';
 import 'views/customer_profile_view.dart';
 import 'views/customer_settings_view.dart';
 import 'views/customer_referrals_view.dart';
+import 'views/customer_marketplace_view.dart';
 
 class CustomerDashboardScreen extends ConsumerStatefulWidget {
-  const CustomerDashboardScreen({super.key});
+  final bool isGuest;
+  const CustomerDashboardScreen({super.key, this.isGuest = false});
 
   @override
   ConsumerState<CustomerDashboardScreen> createState() => _CustomerDashboardScreenState();
 }
 
 class _CustomerDashboardScreenState extends ConsumerState<CustomerDashboardScreen> {
-  int _currentIndex = 0;
+  late int _currentIndex;
+  Timer? _guestPopupTimer;
 
   final List<String> _pageTitles = [
     'Dashboard',
     'My Products',
     'Service Requests',
+    'Water Market',
     'AMC & Billing',
     'Referrals',
     'Settings',
     'Profile',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.isGuest ? 3 : 0;
+    if (widget.isGuest) {
+      _guestPopupTimer = Timer(const Duration(seconds: 5), () {
+        if (mounted) {
+          _showGuestContinueOrLoginDialog();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _guestPopupTimer?.cancel();
+    super.dispose();
+  }
 
   void _handleSignOut() async {
     final confirmed = await AdaptiveDialog.show<bool>(
@@ -64,8 +88,6 @@ class _CustomerDashboardScreenState extends ConsumerState<CustomerDashboardScree
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.width > 800;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final authState = ref.watch(authControllerProvider);
@@ -75,127 +97,62 @@ class _CustomerDashboardScreenState extends ConsumerState<CustomerDashboardScree
       const CustomerOverviewView(),
       const CustomerProductsView(),
       const CustomerServiceView(),
+      CustomerMarketplaceView(isGuest: widget.isGuest),
       const CustomerBillingView(),
       const CustomerReferralsView(),
       const CustomerSettingsView(),
       const CustomerProfileView(),
     ];
 
-    final navigationItems = [
-      const NavigationDestination(
-        icon: Icon(Icons.dashboard_outlined),
-        selectedIcon: Icon(Icons.dashboard, color: AppTheme.primaryColor),
-        label: 'Dashboard',
-      ),
-      const NavigationDestination(
-        icon: Icon(Icons.water_drop_outlined),
-        selectedIcon: Icon(Icons.water_drop, color: AppTheme.primaryColor),
-        label: 'My Products',
-      ),
-      const NavigationDestination(
-        icon: Icon(Icons.home_repair_service_outlined),
-        selectedIcon: Icon(Icons.home_repair_service, color: AppTheme.primaryColor),
-        label: 'Service',
-      ),
-      const NavigationDestination(
-        icon: Icon(Icons.receipt_long_outlined),
-        selectedIcon: Icon(Icons.receipt_long, color: AppTheme.primaryColor),
-        label: 'Billing',
-      ),
-      const NavigationDestination(
-        icon: Icon(Icons.card_giftcard_outlined),
-        selectedIcon: Icon(Icons.card_giftcard, color: AppTheme.primaryColor),
-        label: 'Referrals',
-      ),
-      const NavigationDestination(
-        icon: Icon(Icons.settings_outlined),
-        selectedIcon: Icon(Icons.settings, color: AppTheme.primaryColor),
-        label: 'Settings',
-      ),
-    ];
-
-    // Tablet Layout (Navigation Rail)
-    if (isTablet) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _pageTitles[_currentIndex],
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          actions: _buildHeaderActions(isDark, user?.name ?? 'Customer'),
-        ),
-        body: Row(
-          children: [
-            NavigationRail(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (index) {
-                setState(() => _currentIndex = index);
-              },
-              labelType: NavigationRailLabelType.all,
-              backgroundColor: isDark
-                  ? AppTheme.darkSurfaceContainerLowestColor
-                  : Colors.white,
-              selectedLabelTextStyle: TextStyle(
-                color: isDark ? AppTheme.darkPrimaryColor : AppTheme.primaryColor,
-                fontWeight: FontWeight.bold,
-              ),
-              unselectedLabelTextStyle: TextStyle(
-                color: isDark ? AppTheme.darkOnSurfaceVariantColor : AppTheme.onSurfaceVariantColor,
-              ),
-              destinations: navigationItems
-                  .map((e) => NavigationRailDestination(
-                        icon: e.icon,
-                        selectedIcon: e.selectedIcon,
-                        label: Text(e.label),
-                      ))
-                  .toList(),
-            ),
-            const VerticalDivider(thickness: 1, width: 1),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: views[_currentIndex],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Mobile Layout
     return Scaffold(
       appBar: AppBar(
+        leading: widget.isGuest
+            ? const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Icon(Icons.water_drop, color: AppTheme.primaryColor, size: 28),
+              )
+            : null,
         title: Text(
-          _pageTitles[_currentIndex],
+          widget.isGuest ? 'GGT Marketplace' : _pageTitles[_currentIndex],
           style: theme.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: _buildHeaderActions(isDark, user?.name ?? 'Customer'),
+        actions: _buildHeaderActions(isDark, user?.name ?? 'Guest User'),
       ),
-      drawer: Drawer(
-        backgroundColor: isDark ? AppTheme.darkSurfaceContainerLowestColor : Colors.white,
-        child: _buildDrawerContent(isDark),
-      ),
+      drawer: widget.isGuest
+          ? null
+          : Drawer(
+              backgroundColor: isDark ? AppTheme.darkSurfaceContainerLowestColor : Colors.white,
+              child: _buildDrawerContent(isDark),
+            ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: views[_currentIndex],
       ),
-      bottomNavigationBar: _currentIndex < 3
-          ? NavigationBar(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (index) {
-                setState(() => _currentIndex = index);
-              },
-              destinations: navigationItems.sublist(0, 3),
-            )
-          : null,
     );
   }
 
   List<Widget> _buildHeaderActions(bool isDark, String name) {
+    if (widget.isGuest) {
+      return [
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: TextButton.icon(
+            onPressed: _redirectToLogin,
+            icon: const Icon(Icons.login, color: AppTheme.primaryColor),
+            label: const Text(
+              'Login',
+              style: TextStyle(
+                color: AppTheme.primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ];
+    }
+
     return [
       IconButton(
         icon: const Badge(
@@ -210,7 +167,7 @@ class _CustomerDashboardScreenState extends ConsumerState<CustomerDashboardScree
         child: GestureDetector(
           onTap: () {
             setState(() {
-              _currentIndex = 6; // Navigate to Profile
+              _currentIndex = 7; // Navigate to Profile
             });
           },
           child: CircleAvatar(
@@ -237,9 +194,10 @@ class _CustomerDashboardScreenState extends ConsumerState<CustomerDashboardScree
       _DrawerItem(Icons.dashboard_outlined, 'Dashboard', 0),
       _DrawerItem(Icons.water_drop_outlined, 'My Products', 1),
       _DrawerItem(Icons.home_repair_service_outlined, 'Service Requests', 2),
-      _DrawerItem(Icons.receipt_long_outlined, 'AMC & Billing', 3),
-      _DrawerItem(Icons.card_giftcard_outlined, 'Refer & Earn', 4),
-      _DrawerItem(Icons.settings_outlined, 'Settings', 5),
+      _DrawerItem(Icons.storefront_outlined, 'Water Market', 3),
+      _DrawerItem(Icons.receipt_long_outlined, 'AMC & Billing', 4),
+      _DrawerItem(Icons.card_giftcard_outlined, 'Refer & Earn', 5),
+      _DrawerItem(Icons.settings_outlined, 'Settings', 6),
     ];
 
     return Column(
@@ -300,18 +258,35 @@ class _CustomerDashboardScreenState extends ConsumerState<CustomerDashboardScree
               title: Text(item.label),
               selected: _currentIndex == item.index,
               onTap: () {
-                setState(() => _currentIndex = item.index);
-                Navigator.pop(context);
+                if (widget.isGuest && item.index != 3 && item.index != 6) {
+                  Navigator.pop(context);
+                  _showGuestLoginRequiredDialog();
+                } else {
+                  setState(() => _currentIndex = item.index);
+                  Navigator.pop(context);
+                }
               },
             )),
         const Spacer(),
         const Divider(),
         ListTile(
-          leading: const Icon(Icons.logout, color: AppTheme.errorColor),
-          title: const Text('Sign Out', style: TextStyle(color: AppTheme.errorColor)),
+          leading: Icon(
+            widget.isGuest ? Icons.login : Icons.logout,
+            color: widget.isGuest ? AppTheme.primaryColor : AppTheme.errorColor,
+          ),
+          title: Text(
+            widget.isGuest ? 'Login' : 'Sign Out',
+            style: TextStyle(
+              color: widget.isGuest ? AppTheme.primaryColor : AppTheme.errorColor,
+            ),
+          ),
           onTap: () {
             Navigator.pop(context);
-            _handleSignOut();
+            if (widget.isGuest) {
+              _redirectToLogin();
+            } else {
+              _handleSignOut();
+            }
           },
         ),
         const SizedBox(height: 16),
@@ -325,6 +300,68 @@ class _CustomerDashboardScreenState extends ConsumerState<CustomerDashboardScree
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
     return name.isNotEmpty ? name[0].toUpperCase() : 'C';
+  }
+
+  void _showGuestContinueOrLoginDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Welcome to Green Tech!'),
+          content: const Text(
+            'You are browsing as a guest. Would you like to continue exploring the marketplace or log in to access your dashboard?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Continue as Guest'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _redirectToLogin();
+              },
+              child: const Text('Login'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showGuestLoginRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Login Required'),
+          content: const Text('Please log in to access this feature, add items to your cart, and make purchases.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _redirectToLogin();
+              },
+              child: const Text('Login'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _redirectToLogin() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
   }
 }
 

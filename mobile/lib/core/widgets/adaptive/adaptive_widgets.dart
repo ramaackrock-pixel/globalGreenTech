@@ -23,7 +23,7 @@ class AdaptiveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final isIOS = false; // Always use Material design to match Android design
 
     if (isIOS) {
       switch (type) {
@@ -120,7 +120,7 @@ class AdaptiveTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final isIOS = false; // Always use Material design to match Android design
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -246,7 +246,7 @@ class AdaptiveProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final isIOS = false; // Always use Material design to match Android design
 
     if (isIOS) {
       return CupertinoActivityIndicator(radius: radius, color: color);
@@ -277,7 +277,7 @@ class AdaptiveDialog {
     required String content,
     required List<AdaptiveDialogAction> actions,
   }) {
-    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final isIOS = false; // Always use Material design to match Android design
 
     if (isIOS) {
       return showCupertinoDialog<T>(

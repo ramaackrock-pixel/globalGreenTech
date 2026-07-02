@@ -40,4 +40,13 @@ class CustomerRepositoryImpl implements CustomerRepository {
         .toList();
     return list;
   }
+
+  @override
+  Future<List<MarketProduct>> getMarketplaceProducts() async {
+    final response = await _dioClient.get(ApiEndpoints.marketplaceProducts);
+    final list = (response.data as List)
+        .map((e) => MarketProduct.fromJson(e))
+        .toList();
+    return list;
+  }
 }

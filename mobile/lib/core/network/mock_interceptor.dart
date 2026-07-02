@@ -300,6 +300,18 @@ class MockInterceptor extends Interceptor {
       return;
     }
 
+    // Customer Marketplace Products
+    if (cleanPath == ApiEndpoints.marketplaceProducts) {
+      handler.resolve(
+        Response(
+          requestOptions: options,
+          statusCode: 200,
+          data: _mockMarketplaceProducts,
+        ),
+      );
+      return;
+    }
+
     // Pass through for other URLs
     super.onRequest(options, handler);
   }
@@ -680,6 +692,157 @@ class MockInterceptor extends Interceptor {
       "amount": 16500.0,
       "status": "Paid",
       "description": "Purchase and installation of Eco Water Purifier RO+UV"
+    }
+  ];
+
+  final List<Map<String, dynamic>> _mockMarketplaceProducts = [
+    {
+      "id": "p1",
+      "name": "AquaPure Pro RO+UV+UF Purifier",
+      "description": "Our flagship smart RO purifier featuring 8-stage purification, copper/alkaline enrichment, active carbon filtration, and real-time water quality monitoring via the Green Tech app.",
+      "price": 18999.0,
+      "mrp": 24999.0,
+      "rating": 4.8,
+      "reviewsCount": 1240,
+      "category": "purifiers",
+      "badge": "Best Seller",
+      "icon": "water_drop",
+      "imagePath": "assets/images/Aqua_Innovica_Metalic.jpg",
+      "specifications": {
+        "Purification Technology": "RO + UV + UF + Alkaline",
+        "Storage Capacity": "8 Litres",
+        "Purification Rate": "Up to 15 Litres/Hour",
+        "Input Water TDS": "Up to 2000 ppm",
+        "Warranty": "1 Year Comprehensive Warranty"
+      }
+    },
+    {
+      "id": "p2",
+      "name": "EcoSave Under-Sink RO Purifier",
+      "description": "Compact space-saving purifier that sits elegantly under your kitchen sink. Employs advanced water-saving technology to reduce waste water by up to 50% compared to traditional RO systems.",
+      "price": 15499.0,
+      "mrp": 19999.0,
+      "rating": 4.6,
+      "reviewsCount": 680,
+      "category": "purifiers",
+      "badge": "Eco-Friendly",
+      "icon": "kitchen",
+      "imagePath": "assets/images/Gads-asmart.webp",
+      "specifications": {
+        "Purification Technology": "RO + UV + Mineralizer",
+        "Storage Capacity": "7 Litres Hydrostatic Tank",
+        "Purification Rate": "Up to 12 Litres/Hour",
+        "Water Recovery Rate": "50% (Eco-Max Tech)",
+        "Warranty": "1 Year Comprehensive Warranty"
+      }
+    },
+    {
+      "id": "p3",
+      "name": "GreenTech Smart Solar RO System",
+      "description": "Innovative solar-compatible RO system designed for minimal power consumption. Equipped with an in-built IoT chip to alert you automatically when filters need replacement.",
+      "price": 26999.0,
+      "mrp": 32000.0,
+      "rating": 4.9,
+      "reviewsCount": 310,
+      "category": "purifiers",
+      "badge": "IoT Connected",
+      "icon": "solar_power",
+      "imagePath": "assets/images/Aqua_Innovica_Metalic.jpg",
+      "specifications": {
+        "Purification Technology": "RO + UV + UF + Post Carbon + IoT",
+        "Storage Capacity": "9.5 Litres",
+        "Power Source": "AC/DC Solar Ready Grid",
+        "Real-time TDS Display": "Yes (on app & front panel)",
+        "Warranty": "2 Years Comprehensive Warranty"
+      }
+    },
+    {
+      "id": "f1",
+      "name": "High-Performance 75GPD RO Membrane",
+      "description": "Premium thin-film composite (TFC) membrane that removes heavy metals, fluoride, salts, and micro-plastics. Restores water purity and extends the lifetime of post-filters.",
+      "price": 1899.0,
+      "mrp": 2499.0,
+      "rating": 4.7,
+      "reviewsCount": 2310,
+      "category": "filters",
+      "badge": "Top Rated",
+      "icon": "layers",
+      "specifications": {
+        "Material": "Thin-Film Composite (TFC)",
+        "Flow Rate": "75 Gallons per Day (GPD)",
+        "Salt Rejection Rate": "97% to 99%",
+        "Expected Life": "18 to 24 Months"
+      }
+    },
+    {
+      "id": "f2",
+      "name": "Activated Carbon Block Filter",
+      "description": "Eliminates chlorine, unpleasant odor, organic compounds, and VOCs. Imparts a sweet, natural taste to your purified water.",
+      "price": 899.0,
+      "mrp": 1200.0,
+      "rating": 4.5,
+      "reviewsCount": 1450,
+      "category": "filters",
+      "badge": "Essential",
+      "icon": "blur_linear",
+      "specifications": {
+        "Filter Media": "Premium Coconut Shell Carbon",
+        "Micron Rating": "5 Micron",
+        "Service Life": "6000 Litres (approx. 9-12 Months)"
+      }
+    },
+    {
+      "id": "f3",
+      "name": "Sediment Filter Cartridge (Spun Fiber)",
+      "description": "High-quality micro-fiber filter that acts as the first line of defense, trapping mud, rust, sand, and large suspended particles.",
+      "price": 399.0,
+      "mrp": 500.0,
+      "rating": 4.4,
+      "reviewsCount": 3890,
+      "category": "filters",
+      "badge": "Pack of 2",
+      "icon": "grain",
+      "specifications": {
+        "Material": "100% Polypropylene Spun Fiber",
+        "Micron Rating": "1 Micron",
+        "Filter Life": "3 to 6 Months"
+      }
+    },
+    {
+      "id": "s1",
+      "name": "Shield Plus AMC (1-Year Plan)",
+      "description": "Complete peace of mind package. Includes 3 preventative scheduled service visits, replacement of all filters (sediment + carbon), replacement of RO membrane (if required), and unlimited free breakdown visits.",
+      "price": 4999.0,
+      "mrp": 5999.0,
+      "rating": 4.9,
+      "reviewsCount": 890,
+      "category": "services",
+      "badge": "Popular",
+      "icon": "verified_user",
+      "specifications": {
+        "Validity": "12 Months",
+        "Preventative Service": "3 On-Demand Visits",
+        "Filter Replacements": "Included (Sediment, Carbon, Post-Carbon)",
+        "Membrane Replacement": "Included (if TDS reduction falls < 85%)",
+        "Labor Charges": "Free (Unlimited calls)"
+      }
+    },
+    {
+      "id": "s2",
+      "name": "RO System Deep Sanitization Service",
+      "description": "Professional hygiene maintenance service. A certified technician will sterilize your storage tank using food-grade sanitizing solution, clean all internal pipes, calibrate the TDS controller, and pressure-test the system.",
+      "price": 1199.0,
+      "mrp": 1499.0,
+      "rating": 4.8,
+      "reviewsCount": 750,
+      "category": "services",
+      "badge": "Highly Rated",
+      "icon": "cleaning_services",
+      "specifications": {
+        "Service Duration": "1.5 - 2 Hours",
+        "Sanitization Agent": "Food-grade Organic Sanitizer",
+        "Free TDS Checking": "Yes"
+      }
     }
   ];
 }

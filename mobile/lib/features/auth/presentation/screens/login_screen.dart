@@ -64,6 +64,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         : Colors.white.withOpacity(0.3);
 
     return Scaffold(
+      appBar: Navigator.canPop(context)
+          ? AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: AppTheme.primaryColor),
+                onPressed: () => Navigator.pop(context),
+              ),
+            )
+          : null,
+      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
           // Background Gradient Bubbles

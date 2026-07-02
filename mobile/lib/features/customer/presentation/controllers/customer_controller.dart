@@ -177,3 +177,46 @@ final customerInvoicesProvider =
       final repository = ref.watch(customerRepositoryProvider);
       return CustomerInvoicesNotifier(repository);
     });
+
+// 5. Marketplace Products State & Notifier
+class MarketplaceProductsState {
+  final bool isLoading;
+  final List<MarketProduct> products;
+  final String? error;
+
+  MarketplaceProductsState({
+    this.isLoading = false,
+    this.products = const [],
+    this.error,
+  });
+}
+
+class MarketplaceProductsNotifier extends StateNotifier<MarketplaceProductsState> {
+  final CustomerRepository _repository;
+
+  MarketplaceProductsNotifier(this._repository) : super(MarketplaceProductsState()) {
+    fetchMarketplaceProducts();
+  }
+
+  Future<void> fetchMarketplaceProducts() async {
+    state = MarketplaceProductsState(isLoading: true, products: state.products);
+    try {
+      final products = await _repository.getMarketplaceProducts();
+      state = MarketplaceProductsState(products: products);
+    } catch (e) {
+      state = MarketplaceProductsState(
+        error: e.toString(),
+        products: state.products,
+      );
+    }
+  }
+}
+
+final marketplaceProductsProvider =
+    StateNotifierProvider<MarketplaceProductsNotifier, MarketplaceProductsState>((
+      ref,
+    ) {
+      final repository = ref.watch(customerRepositoryProvider);
+      return MarketplaceProductsNotifier(repository);
+    });
+

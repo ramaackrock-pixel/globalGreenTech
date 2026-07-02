@@ -5,4 +5,5 @@ abstract class CustomerRepository {
   Future<List<CustomerProduct>> getProducts();
   Future<List<CustomerServiceRequest>> getServiceRequests();
   Future<List<CustomerInvoice>> getInvoices();
+  Future<List<MarketProduct>> getMarketplaceProducts();
 }
